@@ -58,51 +58,30 @@ export const productService = {
     });
   },
 
-  getAll: async (
-    pageNumber: number = 1,
-    pageSize: number = 10
-  ): Promise<ApiResponse<any>> =>
-    apiCall(
-      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}?pageNumber=${pageNumber}&pageSize=${pageSize}`
-    ),
+  getAll: async (): Promise<ApiResponse<any>> =>
+    apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}`),
 
   getById: async (id: string): Promise<ApiResponse<ProductResponse>> =>
     apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_ID}/${id}`),
 
   getBySubCategoryId: async (
-    subCategoryId: string,
-    pageNumber: number = 1,
-    pageSize: number = 10
+    subCategoryId: string
   ): Promise<ApiResponse<any>> =>
     apiCall(
-      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}/getBysubCategoryId/${subCategoryId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_SUBCATEGORY_ID}/${subCategoryId}`
     ),
 
-  getByBrandId: async (
-    brandId: string,
-    pageNumber: number = 1,
-    pageSize: number = 10
-  ): Promise<ApiResponse<any>> =>
-    apiCall(
-      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}/getByBrandId/${brandId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
-    ),
+  getByBrandId: async (brandId: string): Promise<ApiResponse<any>> =>
+    apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_BRAND_ID}/${brandId}`),
 
-  search: async (
-    searchKey: string,
-    pageNumber: number = 1,
-    pageSize: number = 10
-  ): Promise<ApiResponse<any>> =>
-    apiCall(
-      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}/searchProduct/${searchKey}?pageNumber=${pageNumber}&pageSize=${pageSize}`
-    ),
+  search: async (searchKey: string): Promise<ApiResponse<any>> =>
+    apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.SEARCH}/${searchKey}`),
 
   getByPriceRange: async (
     minPrice: number,
-    maxPrice: number,
-    pageNumber: number = 1,
-    pageSize: number = 10
+    maxPrice: number
   ): Promise<ApiResponse<any>> =>
     apiCall(
-      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}/getByPriceRange/${minPrice}/${maxPrice}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_PRICE_RANGE}/${minPrice}/${maxPrice}`
     ),
 };

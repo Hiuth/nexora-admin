@@ -383,7 +383,7 @@ export function ProductDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ACTIVE">Đang hoạt động</SelectItem>
-                <SelectItem value="INACTIVE">Ngưng hoạt động</SelectItem>
+                <SelectItem value="INACTIVE">Ngừng hoạt động</SelectItem>
               </SelectContent>
             </Select>
           </div>

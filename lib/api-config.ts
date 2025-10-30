@@ -38,6 +38,10 @@ export const API_CONFIG = {
     PRODUCT: {
       GET_ALL: "/Product/getAll",
       GET_BY_ID: "/Product/getById",
+      GET_BY_BRAND_ID: "/Product/getByBrandId",
+      GET_BY_SUBCATEGORY_ID: "/Product/getBysubCategoryId",
+      SEARCH: "/Product/searchProduct",
+      GET_BY_PRICE_RANGE: "/Product/getByPriceRange",
       CREATE: "/Product/create",
       UPDATE: "/Product/update",
       DELETE: "/Product/delete",

@@ -45,7 +45,7 @@ export function ProductExport({ products, filters }: ProductExportProps) {
             `"${product.subCategoryName}"`,
             product.price,
             product.stockQuantity,
-            product.status === "ACTIVE" ? "Hoạt động" : "Ngưng hoạt động",
+            product.status === "ACTIVE" ? "Hoạt động" : "Ngừng hoạt động",
             `"${product.description || ""}"`,
             product.warrantyPeriod,
           ].join(",")
@@ -176,7 +176,7 @@ export function ProductExport({ products, filters }: ProductExportProps) {
                   <td>${
                     product.status === "ACTIVE"
                       ? "Hoạt động"
-                      : "Ngưng hoạt động"
+                      : "Ngừng hoạt động"
                   }</td>
                 </tr>
               `
