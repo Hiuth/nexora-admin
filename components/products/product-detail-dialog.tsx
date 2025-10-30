@@ -89,8 +89,9 @@ export function ProductDetailDialog({
               <ProductImageGallery
                 product={product}
                 onImageClick={(index) => {
-                  setSelectedImageIndex(index);
-                  setIsImageModalOpen(true);
+                  // Modal disabled - only gallery interaction
+                  // setSelectedImageIndex(index);
+                  // setIsImageModalOpen(true);
                 }}
               />
             </div>
@@ -98,7 +99,8 @@ export function ProductDetailDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Modal xem ảnh toàn màn hình */}
+      {/* Modal xem ảnh toàn màn hình - DISABLED */}
+      {/* 
       <ProductImageModal
         open={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
@@ -107,6 +109,7 @@ export function ProductDetailDialog({
         selectedImageIndex={selectedImageIndex}
         onImageChange={setSelectedImageIndex}
       />
+      */}
     </>
   );
 }

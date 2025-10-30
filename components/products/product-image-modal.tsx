@@ -24,6 +24,28 @@ export function ProductImageModal({
 }: ProductImageModalProps) {
   if (!open) return null;
 
+  // Combine thumbnail and additional images for modal
+  const allModalImages = [];
+  if (product.thumbnail) {
+    allModalImages.push({
+      url: product.thumbnail,
+      alt: `${product.productName} - Ảnh chính`,
+      isMain: true,
+    });
+  }
+  productImages.forEach((img, index) => {
+    allModalImages.push({
+      url: img.imgUrl,
+      alt: `${product.productName} - Ảnh ${index + 1}`,
+      isMain: false,
+    });
+  });
+
+  const validIndex = Math.max(
+    0,
+    Math.min(selectedImageIndex, allModalImages.length - 1)
+  );
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0">
@@ -35,13 +57,13 @@ export function ProductImageModal({
             <X size={24} />
           </button>
 
-          {productImages.length > 0 ? (
+          {allModalImages.length > 0 ? (
             <div className="relative h-full">
               {/* Main Image */}
               <div className="relative h-[90vh] flex items-center justify-center">
                 <Image
-                  src={productImages[selectedImageIndex]?.imgUrl}
-                  alt={`${product.productName} - Ảnh ${selectedImageIndex + 1}`}
+                  src={allModalImages[validIndex]?.url}
+                  alt={allModalImages[validIndex]?.alt}
                   fill
                   className="object-contain"
                   sizes="100vw"
@@ -49,14 +71,14 @@ export function ProductImageModal({
               </div>
 
               {/* Navigation Arrows */}
-              {productImages.length > 1 && (
+              {allModalImages.length > 1 && (
                 <>
                   <button
                     onClick={() =>
                       onImageChange(
-                        selectedImageIndex === 0
-                          ? productImages.length - 1
-                          : selectedImageIndex - 1
+                        validIndex === 0
+                          ? allModalImages.length - 1
+                          : validIndex - 1
                       )
                     }
                     className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
@@ -66,9 +88,9 @@ export function ProductImageModal({
                   <button
                     onClick={() =>
                       onImageChange(
-                        selectedImageIndex === productImages.length - 1
+                        validIndex === allModalImages.length - 1
                           ? 0
-                          : selectedImageIndex + 1
+                          : validIndex + 1
                       )
                     }
                     className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
@@ -80,30 +102,35 @@ export function ProductImageModal({
 
               {/* Image Counter */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/50 rounded-full text-white text-sm">
-                {selectedImageIndex + 1} / {productImages.length}
+                {validIndex + 1} / {allModalImages.length}
               </div>
 
               {/* Thumbnail Strip */}
-              {productImages.length > 1 && (
+              {allModalImages.length > 1 && (
                 <div className="absolute bottom-4 left-4 right-4 flex justify-center">
                   <div className="flex gap-2 max-w-md overflow-x-auto">
-                    {productImages.map((img, index) => (
+                    {allModalImages.map((img, index) => (
                       <button
-                        key={img.id}
+                        key={index}
                         onClick={() => onImageChange(index)}
                         className={`relative w-16 h-16 rounded-md overflow-hidden border-2 transition-colors ${
-                          index === selectedImageIndex
+                          index === validIndex
                             ? "border-white"
                             : "border-transparent hover:border-white/50"
                         }`}
                       >
                         <Image
-                          src={img.imgUrl}
+                          src={img.url}
                           alt={`Thumbnail ${index + 1}`}
                           fill
                           className="object-cover"
                           sizes="64px"
                         />
+                        {img.isMain && (
+                          <div className="absolute top-0 left-0 bg-primary text-white text-xs px-1 rounded-br">
+                            Chính
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>

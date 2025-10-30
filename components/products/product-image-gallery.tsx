@@ -16,10 +16,32 @@ export function ProductImageGallery({
 }: ProductImageGalleryProps) {
   const [productImages, setProductImages] = useState<ProductImgResponse[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0); // 0 = thumbnail
+  const [allImages, setAllImages] = useState<{ url: string; alt: string }[]>(
+    []
+  );
 
   useEffect(() => {
     loadProductImages();
   }, [product.id]);
+
+  useEffect(() => {
+    // Combine thumbnail and additional images
+    const images = [];
+    if (product.thumbnail) {
+      images.push({
+        url: product.thumbnail,
+        alt: `${product.productName} - Ảnh chính`,
+      });
+    }
+    productImages.forEach((img, index) => {
+      images.push({
+        url: img.imgUrl,
+        alt: `${product.productName} - Ảnh ${index + 1}`,
+      });
+    });
+    setAllImages(images);
+  }, [product.thumbnail, productImages, product.productName]);
 
   const loadProductImages = async () => {
     try {
@@ -44,32 +66,29 @@ export function ProductImageGallery({
     }
   };
 
+  const handleImageClick = (index: number) => {
+    setSelectedImageIndex(index);
+    // Don't open modal, just change the displayed image
+    // onImageClick(index);
+  };
+
   return (
     <div className="space-y-4">
       <h4 className="text-lg font-semibold border-b border-muted pb-2">
         Hình ảnh sản phẩm
       </h4>
 
-      {/* Main Image - Smaller size */}
+      {/* Main Display Image */}
       <div className="relative aspect-square rounded-lg overflow-hidden border border-border shadow-sm max-w-xs mx-auto">
-        {product.thumbnail ? (
-          <div
-            className="relative w-full h-full cursor-pointer group"
-            onClick={() => onImageClick(0)}
-          >
+        {allImages.length > 0 && allImages[selectedImageIndex] ? (
+          <div className="relative w-full h-full group">
             <Image
-              src={product.thumbnail}
-              alt={product.productName}
+              src={allImages[selectedImageIndex].url}
+              alt={allImages[selectedImageIndex].alt}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover transition-transform duration-300"
               sizes="300px"
             />
-            {/* Overlay hiệu ứng khi hover */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-              <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-medium text-sm">
-                Xem ảnh
-              </span>
-            </div>
           </div>
         ) : (
           <div className="w-full h-full bg-muted flex items-center justify-center rounded-lg">
@@ -80,10 +99,10 @@ export function ProductImageGallery({
         )}
       </div>
 
-      {/* Additional Images Thumbnail - Compact grid */}
+      {/* All Images Thumbnail Grid */}
       <div className="space-y-2">
         <h5 className="text-sm font-medium text-foreground">
-          Ảnh chi tiết {productImages.length > 0 && `(${productImages.length})`}
+          Tất cả ảnh {allImages.length > 0 && `(${allImages.length})`}
         </h5>
         {loadingImages ? (
           <div className="text-center py-4">
@@ -92,38 +111,41 @@ export function ProductImageGallery({
               Đang tải ảnh...
             </p>
           </div>
-        ) : productImages.length > 0 ? (
+        ) : allImages.length > 0 ? (
           <div className="grid grid-cols-4 gap-2">
-            {productImages.slice(0, 8).map((img, index) => (
+            {allImages.map((img, index) => (
               <div
-                key={img.id}
-                className="relative aspect-square rounded-md overflow-hidden border border-border cursor-pointer hover:border-primary hover:shadow-md transition-all duration-200 group"
-                onClick={() => onImageClick(index)}
+                key={index}
+                className={`relative aspect-square rounded-md overflow-hidden border cursor-pointer hover:shadow-md transition-all duration-200 ${
+                  selectedImageIndex === index
+                    ? "border-primary border-2 ring-2 ring-primary/20"
+                    : "border-border hover:border-primary"
+                }`}
+                onClick={() => handleImageClick(index)}
               >
                 <Image
-                  src={img.imgUrl}
-                  alt={`${product.productName} - Ảnh ${index + 1}`}
+                  src={img.url}
+                  alt={img.alt}
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-300"
+                  className="object-cover transition-transform duration-300"
                   sizes="80px"
                 />
 
-                {/* Overlay number badge */}
+                {/* Selected indicator */}
+                {selectedImageIndex === index && (
+                  <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Image type badge */}
                 <div className="absolute top-1 left-1 bg-black/70 text-white text-xs px-1 py-0.5 rounded text-[10px]">
-                  {index + 1}
+                  {index === 0 ? "Chính" : index}
                 </div>
               </div>
             ))}
-            {productImages.length > 8 && (
-              <div
-                className="relative aspect-square rounded-md overflow-hidden border border-border cursor-pointer bg-muted flex items-center justify-center"
-                onClick={() => onImageClick(8)}
-              >
-                <span className="text-xs font-medium text-muted-foreground">
-                  +{productImages.length - 8}
-                </span>
-              </div>
-            )}
           </div>
         ) : (
           <div className="text-center py-4 bg-muted/20 rounded-lg">
