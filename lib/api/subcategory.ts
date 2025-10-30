@@ -35,16 +35,20 @@ export const subCategoryService = {
     if (data.subCategoryName)
       formData.append("subCategoryName", data.subCategoryName);
     if (data.description) formData.append("description", data.description);
+    if (data.categoryId) {
+      // Nếu có categoryId trong data (thay đổi), dùng giá trị đó
+      formData.append("categoryId", data.categoryId);
+    } else {
+      // Nếu không có thay đổi categoryId, dùng categoryId hiện tại
+      formData.append("categoryId", categoryId);
+    }
     if (file) formData.append("file", file);
 
-    return apiCall(
-      `${API_CONFIG.ENDPOINTS.SUBCATEGORY.UPDATE}/${id}?categoryId=${categoryId}`,
-      {
-        method: "PUT",
-        headers: {},
-        body: formData,
-      }
-    );
+    return apiCall(`${API_CONFIG.ENDPOINTS.SUBCATEGORY.UPDATE}/${id}`, {
+      method: "PUT",
+      headers: {},
+      body: formData,
+    });
   },
 
   getAll: async (): Promise<ApiResponse<SubCategoryResponse[]>> =>

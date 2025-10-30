@@ -113,14 +113,14 @@ export function SubCategoryDialog({
         }
 
         if (formData.categoryId !== data.categoryId) {
-          request.categoryId = formData.categoryId;
+          request.categoryId = formData.categoryId; // Gửi categoryId mới nếu có thay đổi
         }
 
         // Chỉ gửi request nếu có thay đổi hoặc có file mới
         if (Object.keys(request).length > 0 || file) {
           await subCategoryService.update(
             data.id,
-            formData.categoryId,
+            data.categoryId, // Luôn dùng categoryId gốc làm tham số
             request as UpdateSubCategoryRequest,
             file || undefined
           );
