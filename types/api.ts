@@ -30,6 +30,7 @@ export interface BrandResponse {
   id: string;
   brandName: string;
   categoryId: string;
+  categoryName?: string;
 }
 
 // Cart types

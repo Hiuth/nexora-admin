@@ -1,24 +1,75 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Edit2, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
 import AdminLayout from "@/components/admin-layout";
-
-interface Brand {
-  id: string;
-  name: string;
-  slug: string;
-  productCount: number;
-}
-
-const mockBrands: Brand[] = [
-  { id: "1", name: "Samsung", slug: "samsung", productCount: 45 },
-  { id: "2", name: "Apple", slug: "apple", productCount: 67 },
-  { id: "3", name: "Sony", slug: "sony", productCount: 34 },
-];
+import { BrandTable } from "@/components/brands/brand-table";
+import { BrandDialog } from "@/components/brands/brand-dialog";
+import { toast } from "sonner";
+import { BrandResponse, DialogMode } from "@/types";
+import { brandService } from "@/lib/api";
 
 export default function BrandsPage() {
-  const [brands, setBrands] = useState(mockBrands);
+  const [brands, setBrands] = useState<BrandResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<DialogMode>("create");
+  const [selectedBrand, setSelectedBrand] = useState<
+    BrandResponse | undefined
+  >();
+
+  useEffect(() => {
+    loadBrands();
+  }, []);
+
+  const loadBrands = async () => {
+    try {
+      setLoading(true);
+      const response = await brandService.getAll();
+      if (response.code === 1000 && response.result) {
+        setBrands(response.result);
+      }
+    } catch (error) {
+      toast.error("Không thể tải danh sách thương hiệu");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = () => {
+    setDialogMode("create");
+    setSelectedBrand(undefined);
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (brand: BrandResponse) => {
+    setDialogMode("edit");
+    setSelectedBrand(brand);
+    setDialogOpen(true);
+  };
+
+  const handleView = (brand: BrandResponse) => {
+    setDialogMode("view");
+    setSelectedBrand(brand);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa thương hiệu này?")) {
+      return;
+    }
+
+    try {
+      // Delete API is not available in backend yet
+      toast.info("Chức năng xóa chưa được hỗ trợ bởi backend");
+    } catch (error) {
+      toast.error("Không thể xóa thương hiệu");
+    }
+  };
+
+  const handleDialogSubmit = () => {
+    loadBrands();
+  };
 
   return (
     <AdminLayout>
@@ -32,58 +83,35 @@ export default function BrandsPage() {
               Quản lý các thương hiệu sản phẩm
             </p>
           </div>
-          <button className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
+          <button
+            onClick={handleCreate}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+          >
             <Plus size={20} />
             Thêm thương hiệu
           </button>
         </div>
 
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-muted border-b border-border">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Tên thương hiệu
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Slug
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Số sản phẩm
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Hành động
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {brands.map((brand) => (
-                <tr
-                  key={brand.id}
-                  className="border-b border-border hover:bg-muted/50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-foreground">{brand.name}</td>
-                  <td className="px-6 py-4 text-muted-foreground">
-                    {brand.slug}
-                  </td>
-                  <td className="px-6 py-4 text-foreground">
-                    {brand.productCount}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 hover:bg-background rounded transition-colors">
-                        <Edit2 size={18} className="text-foreground" />
-                      </button>
-                      <button className="p-2 hover:bg-background rounded transition-colors">
-                        <Trash2 size={18} className="text-destructive" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-muted-foreground">Đang tải...</div>
+          </div>
+        ) : (
+          <BrandTable
+            brands={brands}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onView={handleView}
+          />
+        )}
+
+        <BrandDialog
+          open={dialogOpen}
+          mode={dialogMode}
+          data={selectedBrand}
+          onClose={() => setDialogOpen(false)}
+          onSubmit={handleDialogSubmit}
+        />
       </div>
     </AdminLayout>
   );

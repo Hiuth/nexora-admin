@@ -1,76 +1,207 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import {
+  BrandResponse,
+  CategoryResponse,
+  DialogMode,
+  CreateBrandRequest,
+  UpdateBrandRequest,
+} from "@/types";
+import { brandService, categoryService } from "@/lib/api";
 
-export function BrandDialog({ isOpen, onOpenChange, brand, onSubmit }) {
-  const [formData, setFormData] = useState({ name: "", slug: "", description: "" })
+interface BrandDialogProps {
+  open: boolean;
+  mode: DialogMode;
+  data?: BrandResponse;
+  onClose: () => void;
+  onSubmit: () => void;
+}
+
+export function BrandDialog({
+  open,
+  mode,
+  data,
+  onClose,
+  onSubmit,
+}: BrandDialogProps) {
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [formData, setFormData] = useState({
+    brandName: "",
+    categoryId: "",
+  });
 
   useEffect(() => {
-    if (brand) {
-      setFormData(brand)
-    } else {
-      setFormData({ name: "", slug: "", description: "" })
+    if (open) {
+      loadCategories();
+      if (mode === "edit" && data) {
+        setFormData({
+          brandName: data.brandName,
+          categoryId: data.categoryId,
+        });
+      } else {
+        setFormData({
+          brandName: "",
+          categoryId: "",
+        });
+      }
     }
-  }, [brand, isOpen])
+  }, [open, mode, data]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSubmit(formData)
-    setFormData({ name: "", slug: "", description: "" })
-  }
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.getAll();
+      if (response.code === 1000 && response.result) {
+        setCategories(response.result);
+      }
+    } catch (error) {
+      toast.error("Không thể tải danh sách danh mục");
+    }
+  };
 
-  const handleNameChange = (e) => {
-    const name = e.target.value
-    const slug = name.toLowerCase().replace(/\s+/g, "-")
-    setFormData({ ...formData, name, slug })
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (mode === "create") {
+        const request: CreateBrandRequest = {
+          brandName: formData.brandName,
+          categoryId: formData.categoryId, // Keep for type compatibility, but won't be sent in body
+        };
+        await brandService.create(formData.categoryId, request);
+        toast.success("Tạo thương hiệu thành công");
+      } else if (mode === "edit" && data) {
+        // Chỉ gửi những field thay đổi
+        const request: Partial<UpdateBrandRequest> = {};
+        let targetCategoryId = data.categoryId;
+
+        if (formData.brandName !== data.brandName) {
+          request.brandName = formData.brandName;
+        }
+
+        if (formData.categoryId !== data.categoryId) {
+          request.categoryId = formData.categoryId;
+          targetCategoryId = formData.categoryId;
+        }
+
+        // Chỉ gửi request nếu có thay đổi
+        if (Object.keys(request).length > 0) {
+          await brandService.update(
+            data.id,
+            targetCategoryId,
+            request as UpdateBrandRequest
+          );
+          toast.success("Cập nhật thương hiệu thành công");
+        } else {
+          toast.info("Không có thay đổi nào để cập nhật");
+        }
+      }
+      onSubmit();
+      onClose();
+    } catch (error) {
+      toast.error("Có lỗi xảy ra");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isViewMode = mode === "view";
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{brand ? "Edit Brand" : "Add Brand"}</DialogTitle>
-          <DialogDescription>
-            {brand ? "Update the brand details below." : "Create a new product brand."}
-          </DialogDescription>
+          <DialogTitle>
+            {mode === "create" && "Tạo thương hiệu mới"}
+            {mode === "edit" && "Chỉnh sửa thương hiệu"}
+            {mode === "view" && "Chi tiết thương hiệu"}
+          </DialogTitle>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Brand Name</Label>
-            <Input id="name" placeholder="e.g., Apple" value={formData.name} onChange={handleNameChange} required />
+            <Label htmlFor="categoryId">Danh mục</Label>
+            {isViewMode ? (
+              <Input
+                value={data?.categoryName || "Không xác định"}
+                disabled
+                className="bg-muted"
+              />
+            ) : (
+              <Select
+                value={formData.categoryId}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, categoryId: value }))
+                }
+                disabled={isViewMode}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn danh mục" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="slug">Slug</Label>
-            <Input id="slug" placeholder="e.g., apple" value={formData.slug} disabled />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="brandName">Tên thương hiệu</Label>
             <Input
-              id="description"
-              placeholder="Brand description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              id="brandName"
+              value={isViewMode ? data?.brandName || "" : formData.brandName}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  brandName: e.target.value,
+                }))
+              }
+              placeholder="Nhập tên thương hiệu"
+              required
+              disabled={isViewMode}
+              className={isViewMode ? "bg-muted" : ""}
             />
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              {isViewMode ? "Đóng" : "Hủy"}
             </Button>
-            <Button type="submit">{brand ? "Update" : "Create"}</Button>
-          </DialogFooter>
+            {!isViewMode && (
+              <Button type="submit" disabled={loading}>
+                {loading
+                  ? "Đang xử lý..."
+                  : mode === "create"
+                  ? "Tạo"
+                  : "Cập nhật"}
+              </Button>
+            )}
+          </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
