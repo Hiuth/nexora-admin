@@ -5,6 +5,7 @@ import {
   UpdateSubCategoryRequest,
 } from "@/types";
 import { apiCall } from "./base";
+import { API_CONFIG } from "../api-config";
 
 export const subCategoryService = {
   create: async (
@@ -17,7 +18,7 @@ export const subCategoryService = {
     if (data.description) formData.append("description", data.description);
     if (file) formData.append("file", file);
 
-    return apiCall(`/SubCategory/create/${categoryId}`, {
+    return apiCall(`${API_CONFIG.ENDPOINTS.SUBCATEGORY.CREATE}/${categoryId}`, {
       method: "POST",
       headers: {},
       body: formData,
@@ -36,21 +37,26 @@ export const subCategoryService = {
     if (data.description) formData.append("description", data.description);
     if (file) formData.append("file", file);
 
-    return apiCall(`/SubCategory/update/${id}?categoryId=${categoryId}`, {
-      method: "PUT",
-      headers: {},
-      body: formData,
-    });
+    return apiCall(
+      `${API_CONFIG.ENDPOINTS.SUBCATEGORY.UPDATE}/${id}?categoryId=${categoryId}`,
+      {
+        method: "PUT",
+        headers: {},
+        body: formData,
+      }
+    );
   },
 
   getAll: async (): Promise<ApiResponse<SubCategoryResponse[]>> =>
-    apiCall("/SubCategory/getAll"),
+    apiCall(API_CONFIG.ENDPOINTS.SUBCATEGORY.GET_ALL),
 
   getById: async (id: string): Promise<ApiResponse<SubCategoryResponse>> =>
-    apiCall(`/SubCategory/getById/${id}`),
+    apiCall(`${API_CONFIG.ENDPOINTS.SUBCATEGORY.GET_BY_ID}/${id}`),
 
   getByCategoryId: async (
     categoryId: string
   ): Promise<ApiResponse<SubCategoryResponse[]>> =>
-    apiCall(`/SubCategory/getByCategoryId/${categoryId}`),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.SUBCATEGORY.GET_ALL}/getByCategoryId/${categoryId}`
+    ),
 };

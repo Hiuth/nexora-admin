@@ -75,8 +75,8 @@ export function SubCategoryDialog({
   const loadCategories = async () => {
     try {
       const response = await categoryService.getAll();
-      if (response.Code === 1000 && response.Result) {
-        setCategories(response.Result);
+      if (response.code === 1000 && response.result) {
+        setCategories(response.result);
       }
     } catch (error) {
       toast.error("Không thể tải danh sách danh mục");
@@ -101,18 +101,33 @@ export function SubCategoryDialog({
         await subCategoryService.create(formData.categoryId, request, file);
         toast.success("Tạo danh mục con thành công");
       } else if (mode === "edit" && data) {
-        const request: UpdateSubCategoryRequest = {
-          subCategoryName: formData.subCategoryName,
-          description: formData.description,
-          categoryId: formData.categoryId,
-        };
-        await subCategoryService.update(
-          data.id,
-          formData.categoryId,
-          request,
-          file || undefined
-        );
-        toast.success("Cập nhật danh mục con thành công");
+        // Chỉ gửi những field thay đổi
+        const request: Partial<UpdateSubCategoryRequest> = {};
+
+        if (formData.subCategoryName !== data.subCategoryName) {
+          request.subCategoryName = formData.subCategoryName;
+        }
+
+        if (formData.description !== data.description) {
+          request.description = formData.description;
+        }
+
+        if (formData.categoryId !== data.categoryId) {
+          request.categoryId = formData.categoryId;
+        }
+
+        // Chỉ gửi request nếu có thay đổi hoặc có file mới
+        if (Object.keys(request).length > 0 || file) {
+          await subCategoryService.update(
+            data.id,
+            formData.categoryId,
+            request as UpdateSubCategoryRequest,
+            file || undefined
+          );
+          toast.success("Cập nhật danh mục con thành công");
+        } else {
+          toast.info("Không có thay đổi nào để cập nhật");
+        }
       }
       onSubmit();
       onClose();
@@ -139,31 +154,43 @@ export function SubCategoryDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="categoryId">Danh mục cha</Label>
-            <Select
-              value={formData.categoryId}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, categoryId: value }))
-              }
-              disabled={isViewMode}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn danh mục cha" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.categoryName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isViewMode ? (
+              <Input
+                value={data?.categoryName || "Không xác định"}
+                disabled
+                className="bg-muted"
+              />
+            ) : (
+              <Select
+                value={formData.categoryId}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, categoryId: value }))
+                }
+                disabled={isViewMode}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn danh mục cha" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="subCategoryName">Tên danh mục con</Label>
             <Input
               id="subCategoryName"
-              value={formData.subCategoryName}
+              value={
+                isViewMode
+                  ? data?.subCategoryName || ""
+                  : formData.subCategoryName
+              }
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -173,6 +200,7 @@ export function SubCategoryDialog({
               placeholder="Nhập tên danh mục con"
               required
               disabled={isViewMode}
+              className={isViewMode ? "bg-muted" : ""}
             />
           </div>
 
@@ -180,7 +208,9 @@ export function SubCategoryDialog({
             <Label htmlFor="description">Mô tả</Label>
             <Textarea
               id="description"
-              value={formData.description}
+              value={
+                isViewMode ? data?.description || "" : formData.description
+              }
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -189,6 +219,7 @@ export function SubCategoryDialog({
               }
               placeholder="Nhập mô tả"
               disabled={isViewMode}
+              className={isViewMode ? "bg-muted" : ""}
             />
           </div>
 

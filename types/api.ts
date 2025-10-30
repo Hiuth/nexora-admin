@@ -58,6 +58,7 @@ export interface SubCategoryResponse {
   subCategoryImg?: string;
   description?: string;
   categoryId: string;
+  categoryName?: string;
 }
 
 // Order types

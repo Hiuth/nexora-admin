@@ -37,8 +37,8 @@ export function SubCategoryTable() {
     try {
       setLoading(true);
       const response = await subCategoryService.getAll();
-      if (response.Code === 1000 && response.Result) {
-        setSubCategories(response.Result);
+      if (response.code === 1000 && response.result) {
+        setSubCategories(response.result);
       }
     } catch (error) {
       toast.error("Không thể tải danh sách danh mục con");
@@ -52,7 +52,10 @@ export function SubCategoryTable() {
       subCategory.subCategoryName
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      subCategory.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      subCategory.description
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      subCategory.categoryName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCreate = () => {
@@ -170,7 +173,7 @@ export function SubCategoryTable() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">
-                          {subCategory.categoryId}
+                          {subCategory.categoryName || subCategory.categoryId}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
