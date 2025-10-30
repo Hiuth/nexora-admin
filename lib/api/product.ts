@@ -5,6 +5,7 @@ import {
   UpdateProductRequest,
 } from "@/types";
 import { apiCall } from "./base";
+import { API_CONFIG } from "../api-config";
 
 export const productService = {
   create: async (
@@ -23,7 +24,7 @@ export const productService = {
     if (file) formData.append("file", file);
 
     return apiCall(
-      `/Product/create/${brandId}?subCategoryId=${subCategoryId}`,
+      `${API_CONFIG.ENDPOINTS.PRODUCT.CREATE}/${brandId}?subCategoryId=${subCategoryId}`,
       {
         method: "POST",
         headers: {},
@@ -51,7 +52,7 @@ export const productService = {
     if (file) formData.append("file", file);
 
     return apiCall(
-      `/Product/update/${id}?brandId=${brandId}&subCategoryId=${subCategoryId}`,
+      `${API_CONFIG.ENDPOINTS.PRODUCT.UPDATE}/${id}?brandId=${brandId}&subCategoryId=${subCategoryId}`,
       {
         method: "PUT",
         headers: {},
@@ -64,10 +65,12 @@ export const productService = {
     pageNumber: number = 1,
     pageSize: number = 10
   ): Promise<ApiResponse<any>> =>
-    apiCall(`/Product/getAll?pageNumber=${pageNumber}&pageSize=${pageSize}`),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    ),
 
   getById: async (id: string): Promise<ApiResponse<ProductResponse>> =>
-    apiCall(`/Product/getById/${id}`),
+    apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_ID}/${id}`),
 
   getBySubCategoryId: async (
     subCategoryId: string,

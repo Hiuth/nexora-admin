@@ -5,6 +5,7 @@ import {
   UpdateCategoryRequest,
 } from "@/types";
 import { apiCall } from "./base";
+import { API_CONFIG } from "../api-config";
 
 export const categoryService = {
   create: async (
@@ -15,7 +16,7 @@ export const categoryService = {
     formData.append("categoryName", data.categoryName);
     if (file) formData.append("file", file);
 
-    return apiCall("/Category/create", {
+    return apiCall(API_CONFIG.ENDPOINTS.CATEGORY.CREATE, {
       method: "POST",
       headers: {},
       body: formData,
@@ -31,7 +32,7 @@ export const categoryService = {
     if (data.categoryName) formData.append("categoryName", data.categoryName);
     if (file) formData.append("file", file);
 
-    return apiCall(`/Category/update/${id}`, {
+    return apiCall(`${API_CONFIG.ENDPOINTS.CATEGORY.UPDATE}/${id}`, {
       method: "PUT",
       headers: {},
       body: formData,
@@ -39,8 +40,8 @@ export const categoryService = {
   },
 
   getAll: async (): Promise<ApiResponse<CategoryResponse[]>> =>
-    apiCall("/Category/getAll"),
+    apiCall(API_CONFIG.ENDPOINTS.CATEGORY.GET_ALL),
 
   getById: async (id: string): Promise<ApiResponse<CategoryResponse>> =>
-    apiCall(`/Category/getById/${id}`),
+    apiCall(`${API_CONFIG.ENDPOINTS.CATEGORY.GET_BY_ID}/${id}`),
 };

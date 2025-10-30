@@ -5,13 +5,14 @@ import {
   UpdateBrandRequest,
 } from "@/types";
 import { apiCall } from "./base";
+import { API_CONFIG } from "../api-config";
 
 export const brandService = {
   create: async (
     categoryId: string,
     data: CreateBrandRequest
   ): Promise<ApiResponse<BrandResponse>> =>
-    apiCall(`/Brand/create/${categoryId}`, {
+    apiCall(`${API_CONFIG.ENDPOINTS.BRAND.CREATE}/${categoryId}`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -21,16 +22,19 @@ export const brandService = {
     categoryId: string,
     data: UpdateBrandRequest
   ): Promise<ApiResponse<BrandResponse>> =>
-    apiCall(`/Brand/update/${brandId}?categoryId=${categoryId}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.BRAND.UPDATE}/${brandId}?categoryId=${categoryId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    ),
 
   getAll: async (): Promise<ApiResponse<BrandResponse[]>> =>
-    apiCall("/Brand/getAll"),
+    apiCall(API_CONFIG.ENDPOINTS.BRAND.GET_ALL),
 
   getById: async (id: string): Promise<ApiResponse<BrandResponse>> =>
-    apiCall(`/Brand/getById/${id}`),
+    apiCall(`${API_CONFIG.ENDPOINTS.BRAND.GET_BY_ID}/${id}`),
 
   getByCategoryId: async (
     categoryId: string

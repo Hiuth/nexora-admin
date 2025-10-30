@@ -6,12 +6,13 @@ import {
   UpdateOrderRequest,
 } from "@/types";
 import { apiCall } from "./base";
+import { API_CONFIG } from "../api-config";
 
 export const orderService = {
   create: async (
     data: CreateOrderRequest
   ): Promise<ApiResponse<OrderResponse>> =>
-    apiCall("/Order/create", {
+    apiCall(API_CONFIG.ENDPOINTS.ORDER.CREATE, {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -20,19 +21,19 @@ export const orderService = {
     id: string,
     data: UpdateOrderRequest
   ): Promise<ApiResponse<OrderResponse>> =>
-    apiCall(`/Order/update/${id}`, {
+    apiCall(`${API_CONFIG.ENDPOINTS.ORDER.UPDATE}/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   getByAccountId: async (): Promise<ApiResponse<OrderResponse[]>> =>
-    apiCall("/Order/getByAccountId"),
+    apiCall(API_CONFIG.ENDPOINTS.ORDER.GET_BY_ACCOUNT_ID),
 
   getAll: async (): Promise<ApiResponse<OrderResponse[]>> =>
-    apiCall("/Order/getAll"),
+    apiCall(API_CONFIG.ENDPOINTS.ORDER.GET_ALL),
 
   delete: async (id: string): Promise<ApiResponse<string>> =>
-    apiCall(`/Order/delete/${id}`, { method: "DELETE" }),
+    apiCall(`${API_CONFIG.ENDPOINTS.ORDER.DELETE}/${id}`, { method: "DELETE" }),
 };
 
 export const orderDetailService = {

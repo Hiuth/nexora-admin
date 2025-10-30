@@ -3,15 +3,15 @@ import { ApiResponse } from "../types/api";
 // Utility functions for handling API responses and data transformation
 
 export const handleApiResponse = <T>(response: ApiResponse<T>): T => {
-  if (response.Code !== 1000) {
-    throw new Error(response.Message || "API Error");
+  if (response.code !== 1000) {
+    throw new Error(response.message || "API Error");
   }
 
-  if (!response.Result) {
+  if (!response.result) {
     throw new Error("No data returned from API");
   }
 
-  return response.Result;
+  return response.result;
 };
 
 export const formatCurrency = (amount: number): string => {

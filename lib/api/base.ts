@@ -1,7 +1,5 @@
 import { ApiResponse } from "@/types";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7071/api";
+import { API_CONFIG } from "../api-config";
 
 // Generic API call function
 export async function apiCall<T>(
@@ -10,7 +8,7 @@ export async function apiCall<T>(
 ): Promise<ApiResponse<T>> {
   const token = localStorage.getItem("token");
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),

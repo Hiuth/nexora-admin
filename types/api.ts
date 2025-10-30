@@ -1,8 +1,8 @@
 // API Response wrapper
 export interface ApiResponse<T> {
-  Code: number;
-  Message: string;
-  Result?: T;
+  code: number;
+  message: string;
+  result?: T;
 }
 
 // Account types
