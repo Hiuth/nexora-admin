@@ -75,8 +75,8 @@ export function ProductUnitDialog({
   const loadProducts = async () => {
     try {
       const response = await productService.getAll(1, 1000);
-      if (response.Code === 1000 && response.Result?.Items) {
-        setProducts(response.Result.Items);
+      if (response.code === 1000 && response.result?.Items) {
+        setProducts(response.result.Items);
       }
     } catch (error) {
       toast.error("Không thể tải danh sách sản phẩm");

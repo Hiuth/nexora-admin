@@ -50,12 +50,10 @@ export interface UpdateSubCategoryRequest {
 // Brand request types
 export interface CreateBrandRequest {
   brandName: string;
-  categoryId: string;
 }
 
 export interface UpdateBrandRequest {
   brandName?: string;
-  categoryId?: string;
 }
 
 // Attributes request types

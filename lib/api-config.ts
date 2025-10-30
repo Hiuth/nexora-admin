@@ -93,6 +93,12 @@ export const API_CONFIG = {
       UPDATE: "/ProductUnit/update",
       DELETE: "/ProductUnit/delete",
     },
+
+    PRODUCT_IMG: {
+      CREATE: "/ProductImg/create",
+      GET_BY_PRODUCT_ID: "/ProductImg/getAllByProductId",
+      DELETE: "/ProductImg/delete",
+    },
   },
 } as const;
 

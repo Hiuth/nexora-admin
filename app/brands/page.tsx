@@ -48,25 +48,6 @@ export default function BrandsPage() {
     setDialogOpen(true);
   };
 
-  const handleView = (brand: BrandResponse) => {
-    setDialogMode("view");
-    setSelectedBrand(brand);
-    setDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa thương hiệu này?")) {
-      return;
-    }
-
-    try {
-      // Delete API is not available in backend yet
-      toast.info("Chức năng xóa chưa được hỗ trợ bởi backend");
-    } catch (error) {
-      toast.error("Không thể xóa thương hiệu");
-    }
-  };
-
   const handleDialogSubmit = () => {
     loadBrands();
   };
@@ -97,12 +78,7 @@ export default function BrandsPage() {
             <div className="text-muted-foreground">Đang tải...</div>
           </div>
         ) : (
-          <BrandTable
-            brands={brands}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onView={handleView}
-          />
+          <BrandTable brands={brands} onEdit={handleEdit} />
         )}
 
         <BrandDialog

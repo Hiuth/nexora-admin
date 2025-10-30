@@ -10,35 +10,33 @@ import { API_CONFIG } from "../api-config";
 export const productService = {
   create: async (
     brandId: string,
-    subCategoryId: string,
     data: CreateProductRequest,
-    file: File
+    thumbnail: File,
+    subCategoryId?: string
   ): Promise<ApiResponse<ProductResponse>> => {
     const formData = new FormData();
     formData.append("productName", data.productName);
     formData.append("price", data.price.toString());
     formData.append("stockQuantity", data.stockQuantity.toString());
-    if (data.description) formData.append("description", data.description);
+    formData.append("description", data.description || "");
     formData.append("status", data.status);
     formData.append("warrantyPeriod", data.warrantyPeriod.toString());
-    if (file) formData.append("file", file);
+    if (subCategoryId) formData.append("subCategoryId", subCategoryId);
+    formData.append("thumbnail", thumbnail);
 
-    return apiCall(
-      `${API_CONFIG.ENDPOINTS.PRODUCT.CREATE}/${brandId}?subCategoryId=${subCategoryId}`,
-      {
-        method: "POST",
-        headers: {},
-        body: formData,
-      }
-    );
+    return apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.CREATE}/${brandId}`, {
+      method: "POST",
+      headers: {},
+      body: formData,
+    });
   },
 
   update: async (
-    id: string,
-    brandId: string,
-    subCategoryId: string,
+    productId: string,
     data: UpdateProductRequest,
-    file?: File
+    thumbnail?: File,
+    brandId?: string,
+    subCategoryId?: string
   ): Promise<ApiResponse<ProductResponse>> => {
     const formData = new FormData();
     if (data.productName) formData.append("productName", data.productName);
@@ -49,16 +47,15 @@ export const productService = {
     if (data.status) formData.append("status", data.status);
     if (data.warrantyPeriod)
       formData.append("warrantyPeriod", data.warrantyPeriod.toString());
-    if (file) formData.append("file", file);
+    if (brandId) formData.append("brandId", brandId);
+    if (subCategoryId) formData.append("subCategoryId", subCategoryId);
+    if (thumbnail) formData.append("thumbnail", thumbnail);
 
-    return apiCall(
-      `${API_CONFIG.ENDPOINTS.PRODUCT.UPDATE}/${id}?brandId=${brandId}&subCategoryId=${subCategoryId}`,
-      {
-        method: "PUT",
-        headers: {},
-        body: formData,
-      }
-    );
+    return apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.UPDATE}/${productId}`, {
+      method: "PUT",
+      headers: {},
+      body: formData,
+    });
   },
 
   getAll: async (
@@ -78,7 +75,7 @@ export const productService = {
     pageSize: number = 10
   ): Promise<ApiResponse<any>> =>
     apiCall(
-      `/Product/getBySubCategoryId/${subCategoryId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}/getBysubCategoryId/${subCategoryId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
     ),
 
   getByBrandId: async (
@@ -87,16 +84,16 @@ export const productService = {
     pageSize: number = 10
   ): Promise<ApiResponse<any>> =>
     apiCall(
-      `/Product/getByBrandId/${brandId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}/getByBrandId/${brandId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
     ),
 
   search: async (
-    searchTerm: string,
+    searchKey: string,
     pageNumber: number = 1,
     pageSize: number = 10
   ): Promise<ApiResponse<any>> =>
     apiCall(
-      `/Product/search?searchTerm=${searchTerm}&pageNumber=${pageNumber}&pageSize=${pageSize}`
+      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}/searchProduct/${searchKey}?pageNumber=${pageNumber}&pageSize=${pageSize}`
     ),
 
   getByPriceRange: async (
@@ -106,6 +103,6 @@ export const productService = {
     pageSize: number = 10
   ): Promise<ApiResponse<any>> =>
     apiCall(
-      `/Product/getByPriceRange?minPrice=${minPrice}&maxPrice=${maxPrice}&pageNumber=${pageNumber}&pageSize=${pageSize}`
+      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}/getByPriceRange/${minPrice}/${maxPrice}?pageNumber=${pageNumber}&pageSize=${pageSize}`
     ),
 };
