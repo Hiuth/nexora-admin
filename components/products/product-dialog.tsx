@@ -12,6 +12,7 @@ import { useProductForm } from "./use-product-form";
 import { ProductFormFields } from "./product-form-fields";
 import { ThumbnailUpload } from "./thumbnail-upload";
 import { AdditionalImagesUpload } from "./additional-images-upload";
+import { EditModeImageUpload } from "./edit-mode-image-upload";
 
 interface ProductDialogProps {
   open: boolean;
@@ -60,18 +61,35 @@ export function ProductDialog({
             onFormDataChange={handleFormDataChange}
           />
 
-          <ThumbnailUpload
-            thumbnailPreview={thumbnailPreview}
-            onThumbnailChange={handleThumbnailChange}
-            required={mode === "create"}
-          />
+          {/* Image upload section - different for create vs edit */}
+          {mode === "create" ? (
+            <>
+              <ThumbnailUpload
+                thumbnailPreview={thumbnailPreview}
+                onThumbnailChange={handleThumbnailChange}
+                required={true}
+              />
 
-          <AdditionalImagesUpload
-            additionalImages={additionalImages}
-            additionalImagesPreview={additionalImagesPreview}
-            onAdditionalImagesChange={handleAdditionalImagesChange}
-            onRemoveImage={removeAdditionalImage}
-          />
+              <AdditionalImagesUpload
+                additionalImages={additionalImages}
+                additionalImagesPreview={additionalImagesPreview}
+                onAdditionalImagesChange={handleAdditionalImagesChange}
+                onRemoveImage={removeAdditionalImage}
+              />
+            </>
+          ) : (
+            data && (
+              <EditModeImageUpload
+                product={data}
+                thumbnailPreview={thumbnailPreview}
+                additionalImages={additionalImages}
+                additionalImagesPreview={additionalImagesPreview}
+                onThumbnailChange={handleThumbnailChange}
+                onAdditionalImagesChange={handleAdditionalImagesChange}
+                onRemoveNewImage={removeAdditionalImage}
+              />
+            )
+          )}
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>

@@ -257,22 +257,29 @@ export function useProductForm({
       subCategoryId = formData.subCategoryId;
     }
 
-    if (
+    const hasFormChanges =
       Object.keys(request).length > 0 ||
       thumbnail ||
       formData.brandId !== data.brandId ||
-      formData.subCategoryId !== data.subCategoryId
-    ) {
-      await productService.update(
-        data.id,
-        request as UpdateProductRequest,
-        thumbnail || undefined,
-        brandId,
-        subCategoryId
-      );
+      formData.subCategoryId !== data.subCategoryId;
 
-      // Upload additional images if any
-      if (additionalImages.length > 0) {
+    const hasNewImages = additionalImages.length > 0;
+
+    if (hasFormChanges || hasNewImages) {
+      // Update product info if there are form changes
+      if (hasFormChanges) {
+        await productService.update(
+          data.id,
+          request as UpdateProductRequest,
+          thumbnail || undefined,
+          brandId,
+          subCategoryId
+        );
+        console.log("Product updated successfully");
+      }
+
+      // Upload additional images if any (independent of form changes)
+      if (hasNewImages) {
         console.log(
           "Starting upload of additional images for existing product..."
         );
@@ -285,12 +292,20 @@ export function useProductForm({
         } catch (error) {
           console.error("Failed to upload some additional images:", error);
           toast.warning(
-            "Sản phẩm đã cập nhật thành công nhưng có lỗi khi tải một số ảnh bổ sung"
+            hasFormChanges
+              ? "Sản phẩm đã cập nhật thành công nhưng có lỗi khi tải một số ảnh bổ sung"
+              : "Có lỗi khi tải ảnh bổ sung"
           );
         }
       }
 
-      toast.success("Cập nhật sản phẩm thành công");
+      if (hasFormChanges && hasNewImages) {
+        toast.success("Cập nhật sản phẩm và tải ảnh thành công");
+      } else if (hasFormChanges) {
+        toast.success("Cập nhật sản phẩm thành công");
+      } else if (hasNewImages) {
+        toast.success("Tải ảnh bổ sung thành công");
+      }
     } else {
       toast.info("Không có thay đổi nào để cập nhật");
     }
@@ -305,6 +320,7 @@ export function useProductForm({
     additionalImages,
     thumbnailPreview,
     additionalImagesPreview,
+    mode,
     handleFormDataChange,
     handleThumbnailChange,
     handleAdditionalImagesChange,
