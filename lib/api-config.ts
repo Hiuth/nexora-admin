@@ -111,7 +111,8 @@ export const API_CONFIG = {
 
     PRODUCT_UNIT: {
       GET_ALL: "/ProductUnit/getAll",
-      GET_BY_ID: "/ProductUnit/getById",
+      GET_BY_ID: "/ProductUnit/getProductUnitById",
+      GET_BY_PRODUCT_ID: "/ProductUnit/getProductUnitByProductId",
       CREATE: "/ProductUnit/create",
       UPDATE: "/ProductUnit/update",
       DELETE: "/ProductUnit/delete",

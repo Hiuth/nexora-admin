@@ -107,7 +107,6 @@ export interface UpdateProductAttributeRequest {
 
 // Product Unit request types
 export interface CreateProductUnitRequest {
-  productId: string;
   imei?: string;
   serialNumber?: string;
   status: string;
