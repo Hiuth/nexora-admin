@@ -17,6 +17,7 @@ export default function ProductAttributesPage() {
   const {
     productAttributes,
     attributes,
+    selectedProduct,
     selectedProductId,
     loading,
     creating,
@@ -168,6 +169,7 @@ export default function ProductAttributesPage() {
           onOpenChange={setDialogOpen}
           productAttribute={editingProductAttribute}
           attributes={attributes}
+          selectedProduct={selectedProduct}
           selectedProductId={selectedProductId}
           onSubmit={handleSubmit}
           onUpdate={handleUpdate}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { productAttributeService } from "@/lib/api/product-attributes";
 import { attributesService } from "@/lib/api/attributes";
+import { productService } from "@/lib/api/product";
 import {
   ProductAttributeResponse,
   AttributesResponse,
@@ -19,13 +20,35 @@ export function useProductAttributes() {
     ProductAttributeWithDetails[]
   >([]);
   const [attributes, setAttributes] = useState<AttributesResponse[]>([]);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductResponse | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  // Load all attributes
+  // Load attributes by category ID
+  const loadAttributesByCategoryId = useCallback(async (categoryId: string) => {
+    try {
+      const response = await attributesService.getByCategoryId(categoryId);
+      if (response.result) {
+        setAttributes(response.result);
+      } else {
+        setAttributes([]);
+      }
+    } catch (error) {
+      console.error("Error loading attributes by category:", error);
+      setAttributes([]);
+      toast({
+        title: "Lỗi",
+        description: "Không thể tải danh sách thuộc tính theo danh mục",
+        variant: "destructive",
+      });
+    }
+  }, []);
+
+  // Load all attributes (fallback)
   const loadAttributes = useCallback(async () => {
     try {
       const response = await attributesService.getAll();
@@ -180,11 +203,43 @@ export function useProductAttributes() {
 
   // Select product
   const selectProduct = useCallback(
-    (productId: string) => {
+    async (productId: string) => {
       setSelectedProductId(productId);
-      loadProductAttributes(productId);
+      setSelectedProduct(null);
+      setAttributes([]);
+
+      if (productId) {
+        try {
+          // Load product details
+          const productResponse = await productService.getById(productId);
+          if (productResponse.code === 1000 && productResponse.result) {
+            const product = productResponse.result;
+            setSelectedProduct(product);
+
+            // Load attributes for this product's category
+            if (product.categoryId) {
+              await loadAttributesByCategoryId(product.categoryId);
+            } else {
+              // Fallback to all attributes if no categoryId
+              await loadAttributes();
+            }
+          }
+        } catch (error) {
+          console.error("Error loading product details:", error);
+          toast({
+            title: "Lỗi",
+            description: "Không thể tải thông tin sản phẩm",
+            variant: "destructive",
+          });
+          // Fallback to all attributes
+          await loadAttributes();
+        }
+
+        // Load product attributes
+        await loadProductAttributes(productId);
+      }
     },
-    [loadProductAttributes]
+    [loadProductAttributes, loadAttributesByCategoryId, loadAttributes]
   );
 
   // Initialize
@@ -195,6 +250,7 @@ export function useProductAttributes() {
   return {
     productAttributes,
     attributes,
+    selectedProduct,
     selectedProductId,
     loading,
     creating,

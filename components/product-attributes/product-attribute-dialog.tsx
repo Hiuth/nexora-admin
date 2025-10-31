@@ -10,7 +10,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ProductAttributeResponse, AttributesResponse } from "@/types";
+import {
+  ProductAttributeResponse,
+  AttributesResponse,
+  ProductResponse,
+} from "@/types";
 import { Loader2 } from "lucide-react";
 import { ProductAttributeFormFields } from "./product-attribute-form-fields";
 
@@ -19,6 +23,7 @@ interface ProductAttributeDialogProps {
   onOpenChange: (open: boolean) => void;
   productAttribute?: ProductAttributeResponse | null;
   attributes: AttributesResponse[];
+  selectedProduct: ProductResponse | null;
   selectedProductId: string;
   onSubmit: (
     attributeId: string,
@@ -38,6 +43,7 @@ export function ProductAttributeDialog({
   onOpenChange,
   productAttribute,
   attributes,
+  selectedProduct,
   selectedProductId,
   onSubmit,
   onUpdate,
@@ -128,6 +134,8 @@ export function ProductAttributeDialog({
           <DialogDescription>
             {productAttribute
               ? "Cập nhật giá trị thuộc tính cho sản phẩm."
+              : selectedProduct
+              ? `Thêm thuộc tính cho sản phẩm "${selectedProduct.productName}" (${selectedProduct.categoryName}). Chỉ hiển thị thuộc tính của danh mục này.`
               : "Thêm giá trị thuộc tính mới cho sản phẩm."}
           </DialogDescription>
         </DialogHeader>
