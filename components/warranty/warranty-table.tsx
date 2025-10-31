@@ -31,7 +31,7 @@ export function WarrantyTable() {
   const [warranties, setWarranties] = useState<WarrantyRecordResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>("create");
   const [selectedWarranty, setSelectedWarranty] = useState<
@@ -46,7 +46,7 @@ export function WarrantyTable() {
     try {
       setLoading(true);
       let response;
-      if (statusFilter) {
+      if (statusFilter && statusFilter !== "all") {
         response = await warrantyService.getByStatus(statusFilter);
       } else {
         // Since there's no getAll method, we'll need to implement it differently
@@ -56,9 +56,9 @@ export function WarrantyTable() {
         return;
       }
 
-      if (response.Code === 1000 && response.Result) {
+      if (response.code === 1000 && response.result) {
         setWarranties(
-          Array.isArray(response.Result) ? response.Result : [response.Result]
+          Array.isArray(response.result) ? response.result : [response.result]
         );
       }
     } catch (error) {
@@ -83,8 +83,8 @@ export function WarrantyTable() {
         response = await warrantyService.getByImei(searchTerm);
       }
 
-      if (response.Code === 1000 && response.Result) {
-        setWarranties([response.Result]);
+      if (response.code === 1000 && response.result) {
+        setWarranties([response.result]);
       }
     } catch (error) {
       toast.error("Không tìm thấy bảo hành");
@@ -184,7 +184,7 @@ export function WarrantyTable() {
                 <SelectValue placeholder="Lọc theo trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tất cả</SelectItem>
+                <SelectItem value="all">Tất cả</SelectItem>
                 <SelectItem value="ACTIVE">Còn hiệu lực</SelectItem>
                 <SelectItem value="EXPIRED">Đã hết hạn</SelectItem>
                 <SelectItem value="CLAIMED">Đã sử dụng</SelectItem>

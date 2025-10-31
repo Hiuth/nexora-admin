@@ -83,11 +83,12 @@ export const API_CONFIG = {
     },
 
     ATTRIBUTES: {
-      GET_ALL: "/Attributes/getAll",
-      GET_BY_ID: "/Attributes/getById",
-      CREATE: "/Attributes/create",
-      UPDATE: "/Attributes/update",
-      DELETE: "/Attributes/delete",
+      GET_ALL: "/Attribute/getAll",
+      GET_BY_ID: "/Attribute/getById",
+      GET_BY_CATEGORY_ID: "/Attribute/getByCategoryId",
+      CREATE: "/Attribute/create",
+      UPDATE: "/Attribute/update",
+      DELETE: "/Attribute/delete",
     },
 
     PRODUCT_UNIT: {
