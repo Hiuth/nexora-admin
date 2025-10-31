@@ -19,7 +19,7 @@ export class PcBuildOperations {
   ): Promise<void> {
     if (!formData.categoryId) {
       toast.error("Vui lòng chọn danh mục");
-      throw new Error("Category is required");
+      return;
     }
 
     const request: CreatePcBuildRequest = {
@@ -145,6 +145,7 @@ export class PcBuildOperations {
         toast.success("Tải ảnh bổ sung thành công");
       }
 
+      // Only call onSuccess when there are actual changes - consistent with product logic
       onSuccess();
     } else {
       toast.info("Không có thay đổi nào để cập nhật");

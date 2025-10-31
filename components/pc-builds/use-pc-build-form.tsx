@@ -63,22 +63,19 @@ export function usePcBuildForm({
       setLoading(true);
 
       try {
-        const onSuccess = async () => {
-          await loadPcBuilds(currentPage);
-          onSubmit();
-          onClose();
-        };
-
         if (mode === "create") {
           if (!thumbnail) {
             toast.error("Vui lòng chọn ảnh thumbnail");
+            setLoading(false);
             return;
           }
           await PcBuildOperations.create(
             formData,
             thumbnail,
             additionalImages,
-            onSuccess
+            async () => {
+              await loadPcBuilds(currentPage);
+            }
           );
         } else if (mode === "edit" && data) {
           await PcBuildOperations.update(
@@ -86,9 +83,14 @@ export function usePcBuildForm({
             formData,
             thumbnail,
             additionalImages,
-            onSuccess
+            async () => {
+              await loadPcBuilds(currentPage);
+            }
           );
         }
+
+        onSubmit();
+        onClose();
       } catch (error) {
         toast.error("Có lỗi xảy ra");
       } finally {

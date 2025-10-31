@@ -14,6 +14,10 @@ export { PcBuildFormFields } from "./pc-build-form-fields";
 export { ThumbnailUpload } from "./thumbnail-upload";
 export { EditModeImageUpload } from "./edit-mode-image-upload";
 export { PcBuildDialogNew } from "./pc-build-dialog-new";
+export { PcBuildDetailDialog } from "./pc-build-detail-dialog";
+export { PcBuildBasicInfo } from "./pc-build-basic-info";
+export { PcBuildDetailSection } from "./pc-build-detail-section";
+export { PcBuildImageGallery } from "./pc-build-image-gallery";
 export { PcBuildTable } from "./pc-build-table";
 
 // Context

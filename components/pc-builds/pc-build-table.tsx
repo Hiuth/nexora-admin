@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Edit, Plus, Search, Trash2 } from "lucide-react";
 import { PcBuildResponse, DialogMode } from "@/types";
 import { PcBuildDialogNew } from "./pc-build-dialog-new";
+import { PcBuildDetailDialog } from "./pc-build-detail-dialog";
 import { getStatusColor, getStatusText, formatCurrency } from "@/lib/api-utils";
 import { usePcBuildsContext } from "./pc-builds-context";
 
@@ -40,6 +41,7 @@ export function PcBuildTable() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>("create");
   const [selectedPcBuild, setSelectedPcBuild] = useState<
     PcBuildResponse | undefined
@@ -68,8 +70,7 @@ export function PcBuildTable() {
 
   const handleView = (pcBuild: PcBuildResponse) => {
     setSelectedPcBuild(pcBuild);
-    setDialogMode("view");
-    setDialogOpen(true);
+    setDetailDialogOpen(true);
   };
 
   const handleDelete = async (pcBuild: PcBuildResponse) => {
@@ -277,6 +278,12 @@ export function PcBuildTable() {
           // Refresh data after successful operation
           // The hook handles this automatically
         }}
+      />
+
+      <PcBuildDetailDialog
+        pcBuild={selectedPcBuild || null}
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
       />
     </div>
   );
