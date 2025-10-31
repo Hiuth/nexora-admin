@@ -47,6 +47,9 @@ export function ProductTable({
                 Thương hiệu
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                Danh mục
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
                 Danh mục con
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
@@ -75,6 +78,9 @@ export function ProductTable({
                   </td>
                   <td className="px-6 py-4 text-muted-foreground">
                     {product.brandName}
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground">
+                    {product.categoryName}
                   </td>
                   <td className="px-6 py-4 text-muted-foreground">
                     {product.subCategoryName}

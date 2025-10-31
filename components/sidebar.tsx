@@ -56,6 +56,11 @@ const menuGroups = [
         href: "/attributes",
         icon: Layers,
       },
+      {
+        label: "Thuộc Tính Sản Phẩm",
+        href: "/product-attributes",
+        icon: Settings,
+      },
     ],
   },
   {

@@ -6,11 +6,17 @@ import {
   ProductResponse,
   BrandResponse,
   SubCategoryResponse,
+  CategoryResponse,
   DialogMode,
   CreateProductRequest,
   UpdateProductRequest,
 } from "@/types";
-import { productService, brandService, subCategoryService } from "@/lib/api";
+import {
+  productService,
+  brandService,
+  subCategoryService,
+  categoryService,
+} from "@/lib/api";
 import { ProductFormData } from "./product-form-fields";
 import { ImageUploadService } from "./image-upload-service";
 
@@ -31,6 +37,7 @@ export function useProductForm({
 }: UseProductFormProps) {
   const [loading, setLoading] = useState(false);
   const [brands, setBrands] = useState<BrandResponse[]>([]);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategoryResponse[]>([]);
   const [formData, setFormData] = useState<ProductFormData>({
     productName: "",
@@ -40,6 +47,7 @@ export function useProductForm({
     status: "ACTIVE",
     warrantyPeriod: 12,
     brandId: "",
+    categoryId: "",
     subCategoryId: "",
   });
   const [thumbnail, setThumbnail] = useState<File | null>(null);
@@ -52,6 +60,7 @@ export function useProductForm({
   useEffect(() => {
     if (open) {
       loadBrands();
+      loadCategories();
       loadSubCategories();
       if (mode === "edit" && data) {
         setFormData({
@@ -62,6 +71,7 @@ export function useProductForm({
           status: data.status,
           warrantyPeriod: data.warrantyPeriod,
           brandId: data.brandId,
+          categoryId: data.categoryId,
           subCategoryId: data.subCategoryId,
         });
       } else {
@@ -73,6 +83,7 @@ export function useProductForm({
           status: "ACTIVE",
           warrantyPeriod: 12,
           brandId: "",
+          categoryId: "",
           subCategoryId: "",
         });
       }
@@ -103,6 +114,17 @@ export function useProductForm({
       }
     } catch (error) {
       toast.error("Không thể tải danh sách thương hiệu");
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.getAll();
+      if (response.code === 1000 && response.result) {
+        setCategories(response.result);
+      }
+    } catch (error) {
+      toast.error("Không thể tải danh sách danh mục");
     }
   };
 
@@ -180,6 +202,16 @@ export function useProductForm({
       return;
     }
 
+    if (!formData.categoryId) {
+      toast.error("Vui lòng chọn danh mục");
+      return;
+    }
+
+    if (!formData.brandId) {
+      toast.error("Vui lòng chọn thương hiệu");
+      return;
+    }
+
     const request: CreateProductRequest = {
       productName: formData.productName,
       price: formData.price,
@@ -192,6 +224,7 @@ export function useProductForm({
     };
 
     const productResponse = await productService.create(
+      formData.categoryId,
       formData.brandId,
       request,
       thumbnail,
@@ -230,6 +263,7 @@ export function useProductForm({
     // Update logic (chỉ gửi fields thay đổi)
     const request: Partial<UpdateProductRequest> = {};
     let brandId = data.brandId;
+    let categoryId = data.categoryId;
     let subCategoryId = data.subCategoryId;
 
     if (formData.productName !== data.productName) {
@@ -253,6 +287,9 @@ export function useProductForm({
     if (formData.brandId !== data.brandId) {
       brandId = formData.brandId;
     }
+    if (formData.categoryId !== data.categoryId) {
+      categoryId = formData.categoryId;
+    }
     if (formData.subCategoryId !== data.subCategoryId) {
       subCategoryId = formData.subCategoryId;
     }
@@ -261,6 +298,7 @@ export function useProductForm({
       Object.keys(request).length > 0 ||
       thumbnail ||
       formData.brandId !== data.brandId ||
+      formData.categoryId !== data.categoryId ||
       formData.subCategoryId !== data.subCategoryId;
 
     const hasNewImages = additionalImages.length > 0;
@@ -273,6 +311,7 @@ export function useProductForm({
           request as UpdateProductRequest,
           thumbnail || undefined,
           brandId,
+          categoryId,
           subCategoryId
         );
         console.log("Product updated successfully");
@@ -314,6 +353,7 @@ export function useProductForm({
   return {
     loading,
     brands,
+    categories,
     subCategories,
     formData,
     thumbnail,

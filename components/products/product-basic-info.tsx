@@ -102,6 +102,13 @@ export function ProductBasicInfo({ product }: ProductBasicInfoProps) {
 
         <div className="flex justify-between items-center p-2 bg-muted/20 rounded-lg">
           <span className="text-muted-foreground font-medium">Danh mục:</span>
+          <span className="font-semibold">{product.categoryName}</span>
+        </div>
+
+        <div className="flex justify-between items-center p-2 bg-muted/20 rounded-lg">
+          <span className="text-muted-foreground font-medium">
+            Danh mục phụ:
+          </span>
           <span className="font-semibold">{product.subCategoryName}</span>
         </div>
 

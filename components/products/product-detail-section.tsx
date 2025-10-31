@@ -24,6 +24,12 @@ export function ProductDetailSection({ product }: ProductDetailSectionProps) {
             <span className="text-muted-foreground font-medium text-sm">
               Danh mục:
             </span>
+            <span className="font-semibold">{product.categoryName}</span>
+          </div>
+          <div className="flex justify-between p-2 bg-muted/20 rounded-lg">
+            <span className="text-muted-foreground font-medium text-sm">
+              Danh mục phụ:
+            </span>
             <span className="font-semibold">{product.subCategoryName}</span>
           </div>
           <div className="flex justify-between p-2 bg-muted/20 rounded-lg">

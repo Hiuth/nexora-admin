@@ -9,6 +9,7 @@ import { API_CONFIG } from "../api-config";
 
 export const productService = {
   create: async (
+    categoryId: string,
     brandId: string,
     data: CreateProductRequest,
     thumbnail: File,
@@ -24,11 +25,14 @@ export const productService = {
     if (subCategoryId) formData.append("subCategoryId", subCategoryId);
     formData.append("thumbnail", thumbnail);
 
-    return apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.CREATE}/${brandId}`, {
-      method: "POST",
-      headers: {},
-      body: formData,
-    });
+    return apiCall(
+      `${API_CONFIG.ENDPOINTS.PRODUCT.CREATE}/${categoryId}/${brandId}`,
+      {
+        method: "POST",
+        headers: {},
+        body: formData,
+      }
+    );
   },
 
   update: async (
@@ -36,6 +40,7 @@ export const productService = {
     data: UpdateProductRequest,
     thumbnail?: File,
     brandId?: string,
+    categoryId?: string,
     subCategoryId?: string
   ): Promise<ApiResponse<ProductResponse>> => {
     const formData = new FormData();
@@ -48,6 +53,7 @@ export const productService = {
     if (data.warrantyPeriod)
       formData.append("warrantyPeriod", data.warrantyPeriod.toString());
     if (brandId) formData.append("brandId", brandId);
+    if (categoryId) formData.append("categoryId", categoryId);
     if (subCategoryId) formData.append("subCategoryId", subCategoryId);
     if (thumbnail) formData.append("thumbnail", thumbnail);
 
@@ -58,29 +64,31 @@ export const productService = {
     });
   },
 
-  getAll: async (): Promise<ApiResponse<any>> =>
-    apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}`),
+  getAll: async (): Promise<ApiResponse<ProductResponse[]>> =>
+    apiCall(API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL),
 
   getById: async (id: string): Promise<ApiResponse<ProductResponse>> =>
     apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_ID}/${id}`),
 
   getBySubCategoryId: async (
     subCategoryId: string
-  ): Promise<ApiResponse<any>> =>
+  ): Promise<ApiResponse<ProductResponse[]>> =>
     apiCall(
       `${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_SUBCATEGORY_ID}/${subCategoryId}`
     ),
 
-  getByBrandId: async (brandId: string): Promise<ApiResponse<any>> =>
+  getByBrandId: async (
+    brandId: string
+  ): Promise<ApiResponse<ProductResponse[]>> =>
     apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_BRAND_ID}/${brandId}`),
 
-  search: async (searchKey: string): Promise<ApiResponse<any>> =>
+  search: async (searchKey: string): Promise<ApiResponse<ProductResponse[]>> =>
     apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.SEARCH}/${searchKey}`),
 
   getByPriceRange: async (
     minPrice: number,
     maxPrice: number
-  ): Promise<ApiResponse<any>> =>
+  ): Promise<ApiResponse<ProductResponse[]>> =>
     apiCall(
       `${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_PRICE_RANGE}/${minPrice}/${maxPrice}`
     ),

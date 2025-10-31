@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BrandResponse, SubCategoryResponse } from "@/types";
+import { BrandResponse, SubCategoryResponse, CategoryResponse } from "@/types";
 
 interface ProductFormData {
   productName: string;
@@ -20,12 +20,14 @@ interface ProductFormData {
   status: string;
   warrantyPeriod: number;
   brandId: string;
+  categoryId: string;
   subCategoryId: string;
 }
 
 interface ProductFormFieldsProps {
   formData: ProductFormData;
   brands: BrandResponse[];
+  categories: CategoryResponse[];
   subCategories: SubCategoryResponse[];
   onFormDataChange: (data: Partial<ProductFormData>) => void;
 }
@@ -33,9 +35,23 @@ interface ProductFormFieldsProps {
 export function ProductFormFields({
   formData,
   brands,
+  categories,
   subCategories,
   onFormDataChange,
 }: ProductFormFieldsProps) {
+  // Filter subcategories based on selected category
+  const filteredSubCategories = subCategories.filter(
+    (subCategory) => subCategory.categoryId === formData.categoryId
+  );
+
+  // Handle category change - reset subcategory when category changes
+  const handleCategoryChange = (categoryId: string) => {
+    onFormDataChange({
+      categoryId,
+      subCategoryId: "", // Reset subcategory when category changes
+    });
+  };
+
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
@@ -117,18 +133,48 @@ export function ProductFormFields({
           </Select>
         </div>
         <div className="space-y-2">
+          <Label htmlFor="categoryId">Danh mục</Label>
+          <Select
+            value={formData.categoryId}
+            onValueChange={handleCategoryChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Chọn danh mục" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.categoryName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-2">
           <Label htmlFor="subCategoryId">Danh mục con</Label>
           <Select
             value={formData.subCategoryId}
             onValueChange={(value) =>
               onFormDataChange({ subCategoryId: value })
             }
+            disabled={!formData.categoryId}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Chọn danh mục con" />
+              <SelectValue
+                placeholder={
+                  !formData.categoryId
+                    ? "Vui lòng chọn danh mục trước"
+                    : filteredSubCategories.length === 0
+                    ? "Không có danh mục con"
+                    : "Chọn danh mục con"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
-              {subCategories.map((subCategory) => (
+              {filteredSubCategories.map((subCategory) => (
                 <SelectItem key={subCategory.id} value={subCategory.id}>
                   {subCategory.subCategoryName}
                 </SelectItem>

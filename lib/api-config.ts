@@ -91,6 +91,13 @@ export const API_CONFIG = {
       DELETE: "/Attribute/delete",
     },
 
+    PRODUCT_ATTRIBUTE: {
+      GET_BY_PRODUCT_ID: "/ProductAttribute/getByProductId",
+      CREATE: "/ProductAttribute/create",
+      UPDATE: "/ProductAttribute/update",
+      DELETE: "/ProductAttribute/delete",
+    },
+
     PRODUCT_UNIT: {
       GET_ALL: "/ProductUnit/getAll",
       GET_BY_ID: "/ProductUnit/getById",

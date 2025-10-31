@@ -32,6 +32,7 @@ export function ProductDialog({
   const {
     loading,
     brands,
+    categories,
     subCategories,
     formData,
     thumbnailPreview,
@@ -57,6 +58,7 @@ export function ProductDialog({
           <ProductFormFields
             formData={formData}
             brands={brands}
+            categories={categories}
             subCategories={subCategories}
             onFormDataChange={handleFormDataChange}
           />

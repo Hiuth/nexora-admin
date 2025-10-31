@@ -47,15 +47,13 @@ export default function ProductsPage() {
 
   useEffect(() => {
     loadProducts();
-  }, []); // Chỉ load một lần khi component mount
+  }, []);
 
   const loadProducts = async (customFilters?: ProductFilterState) => {
     try {
       setLoading(true);
       const currentFilters = customFilters || filters;
       let response;
-
-      console.log("Loading products with filters:", currentFilters);
 
       // Determine which API to call based on active filters
       if (currentFilters.search) {
@@ -77,20 +75,9 @@ export default function ProductsPage() {
         response = await productService.getAll();
       }
 
-      console.log("API Response:", response);
-
       if (response.code === 1000 && response.result) {
-        // Backend returns PaginatedResponse với structure: { items, currentPage, totalPages, totalCount, pageSize }
         const paginatedData = response.result;
-        let filteredProducts = paginatedData.items || [];
-
-        console.log("Products from API:", filteredProducts);
-        console.log("Pagination info:", {
-          currentPage: paginatedData.currentPage,
-          totalPages: paginatedData.totalPages,
-          totalCount: paginatedData.totalCount,
-          pageSize: paginatedData.pageSize,
-        });
+        let filteredProducts = (paginatedData as any).items || [];
 
         // Apply client-side filters for status and stock
         if (currentFilters.status) {
@@ -121,25 +108,22 @@ export default function ProductsPage() {
           );
         }
 
-        console.log("Filtered products:", filteredProducts);
         setProducts(filteredProducts);
 
         // Cập nhật pagination info từ backend
-        if (paginatedData.currentPage !== undefined) {
+        if ((paginatedData as any).currentPage !== undefined) {
           setPagination((prev) => ({
             ...prev,
-            currentPage: paginatedData.currentPage || 1,
-            totalPages: paginatedData.totalPages || 0,
-            totalItems: paginatedData.totalCount || 0,
-            pageSize: paginatedData.pageSize || 10,
+            currentPage: (paginatedData as any).currentPage || 1,
+            totalPages: (paginatedData as any).totalPages || 0,
+            totalItems: (paginatedData as any).totalCount || 0,
+            pageSize: (paginatedData as any).pageSize || 10,
           }));
         }
       } else {
-        console.log("No products found or API error:", response);
         setProducts([]);
       }
     } catch (error) {
-      console.error("Error loading products:", error);
       toast.error("Không thể tải danh sách sản phẩm");
       setProducts([]);
     } finally {

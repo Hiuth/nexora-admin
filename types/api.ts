@@ -96,6 +96,8 @@ export interface ProductResponse {
   brandName: string;
   subCategoryId: string;
   subCategoryName: string;
+  categoryId: string;
+  categoryName: string;
   warrantyPeriod: number;
 }
 

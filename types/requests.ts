@@ -94,9 +94,11 @@ export interface UpdateProductRequest {
 
 // Product Attribute request types
 export interface CreateProductAttributeRequest {
-  productId: string;
-  attributeId: string;
   value: string;
+}
+
+export interface UpdateProductAttributeRequest {
+  value?: string;
 }
 
 export interface UpdateProductAttributeRequest {

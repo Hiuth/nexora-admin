@@ -28,6 +28,7 @@ export function ProductExport({ products, filters }: ProductExportProps) {
       const headers = [
         "Tên sản phẩm",
         "Thương hiệu",
+        "Danh mục",
         "Danh mục con",
         "Giá",
         "Tồn kho",
@@ -42,6 +43,7 @@ export function ProductExport({ products, filters }: ProductExportProps) {
           [
             `"${product.productName}"`,
             `"${product.brandName}"`,
+            `"${product.categoryName}"`,
             `"${product.subCategoryName}"`,
             product.price,
             product.stockQuantity,
@@ -79,6 +81,7 @@ export function ProductExport({ products, filters }: ProductExportProps) {
           id: product.id,
           productName: product.productName,
           brandName: product.brandName,
+          categoryName: product.categoryName,
           subCategoryName: product.subCategoryName,
           price: product.price,
           stockQuantity: product.stockQuantity,
@@ -155,6 +158,7 @@ export function ProductExport({ products, filters }: ProductExportProps) {
                 <th>Tên sản phẩm</th>
                 <th>Thương hiệu</th>
                 <th>Danh mục</th>
+                <th>Danh mục con</th>
                 <th>Giá</th>
                 <th>Tồn kho</th>
                 <th>Trạng thái</th>
@@ -167,6 +171,7 @@ export function ProductExport({ products, filters }: ProductExportProps) {
                 <tr>
                   <td>${product.productName}</td>
                   <td>${product.brandName}</td>
+                  <td>${product.categoryName}</td>
                   <td>${product.subCategoryName}</td>
                   <td>${new Intl.NumberFormat("vi-VN", {
                     style: "currency",
