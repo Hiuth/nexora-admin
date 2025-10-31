@@ -247,9 +247,18 @@ export function useProductAttributes() {
     loadAttributes();
   }, [loadAttributes]);
 
+  // Get available attributes (not yet used for this product)
+  const availableAttributes = attributes.filter(
+    (attribute) =>
+      !productAttributes.some(
+        (productAttr) => productAttr.attributeId === attribute.id
+      )
+  );
+
   return {
     productAttributes,
     attributes,
+    availableAttributes,
     selectedProduct,
     selectedProductId,
     loading,

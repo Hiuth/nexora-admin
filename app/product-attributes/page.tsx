@@ -17,6 +17,7 @@ export default function ProductAttributesPage() {
   const {
     productAttributes,
     attributes,
+    availableAttributes,
     selectedProduct,
     selectedProductId,
     loading,
@@ -34,7 +35,7 @@ export default function ProductAttributesPage() {
     useState<ProductAttributeWithDetails | null>(null);
 
   const handleCreate = () => {
-    if (!selectedProductId) {
+    if (!selectedProductId || availableAttributes.length === 0) {
       return;
     }
     setEditingProductAttribute(null);
@@ -82,10 +83,24 @@ export default function ProductAttributesPage() {
           <Button
             onClick={handleCreate}
             className="flex items-center gap-2"
-            disabled={!selectedProductId || creating || updating}
+            disabled={
+              !selectedProductId ||
+              creating ||
+              updating ||
+              availableAttributes.length === 0
+            }
+            title={
+              !selectedProductId
+                ? "Vui lòng chọn sản phẩm trước"
+                : availableAttributes.length === 0
+                ? "Tất cả thuộc tính đã được thêm"
+                : "Thêm thuộc tính mới"
+            }
           >
             <Plus size={20} />
-            Thêm thuộc tính
+            {availableAttributes.length === 0 && selectedProductId
+              ? "Đã thêm hết thuộc tính"
+              : "Thêm thuộc tính"}
           </Button>
         </div>
 
@@ -104,39 +119,6 @@ export default function ProductAttributesPage() {
                 />
               </CardContent>
             </Card>
-
-            {/* Stats */}
-            {selectedProductId && (
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle className="text-lg">Thống kê</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">
-                      Tổng thuộc tính:
-                    </span>
-                    <span className="font-semibold">
-                      {productAttributes.length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">
-                      Thuộc tính có sẵn:
-                    </span>
-                    <span className="font-semibold">{attributes.length}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">
-                      Chưa sử dụng:
-                    </span>
-                    <span className="font-semibold">
-                      {attributes.length - productAttributes.length}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
 
           {/* Product Attributes Table */}
@@ -168,7 +150,9 @@ export default function ProductAttributesPage() {
           isOpen={dialogOpen}
           onOpenChange={setDialogOpen}
           productAttribute={editingProductAttribute}
-          attributes={attributes}
+          attributes={
+            editingProductAttribute ? attributes : availableAttributes
+          }
           selectedProduct={selectedProduct}
           selectedProductId={selectedProductId}
           onSubmit={handleSubmit}

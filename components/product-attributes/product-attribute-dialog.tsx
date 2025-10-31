@@ -135,7 +135,7 @@ export function ProductAttributeDialog({
             {productAttribute
               ? "Cập nhật giá trị thuộc tính cho sản phẩm."
               : selectedProduct
-              ? `Thêm thuộc tính cho sản phẩm "${selectedProduct.productName}" (${selectedProduct.categoryName}). Chỉ hiển thị thuộc tính của danh mục này.`
+              ? `Thêm thuộc tính cho sản phẩm "${selectedProduct.productName}" (${selectedProduct.categoryName}). Chỉ hiển thị thuộc tính chưa được sử dụng.`
               : "Thêm giá trị thuộc tính mới cho sản phẩm."}
           </DialogDescription>
         </DialogHeader>
