@@ -20,52 +20,67 @@ import { useState } from "react";
 const menuItems = [
   {
     label: "Dashboard",
-    href: "/admin",
+    href: "/",
     icon: LayoutGrid,
   },
   {
     label: "Quản lý danh mục",
-    href: "/admin/categories",
+    href: "/categories",
     icon: Layers,
   },
   {
     label: "Quản lý danh mục con",
-    href: "/admin/subcategories",
+    href: "/subcategories",
     icon: FolderTree,
   },
   {
     label: "Quản lý thương hiệu",
-    href: "/admin/brands",
+    href: "/brands",
     icon: Tag,
   },
   {
     label: "Quản lý thuộc tính",
-    href: "/admin/attributes",
+    href: "/attributes",
+    icon: Settings,
+  },
+  {
+    label: "Thuộc tính sản phẩm",
+    href: "/product-attributes",
     icon: Settings,
   },
   {
     label: "Quản lý sản phẩm",
-    href: "/admin/products",
+    href: "/products",
     icon: Package,
   },
   {
-    label: "Quản lý đơn vị sản phẩm",
-    href: "/admin/product-units",
+    label: "Đơn vị sản phẩm",
+    href: "/product-units",
     icon: Boxes,
   },
   {
-    label: "Quản lý PC Build",
-    href: "/admin/pc-builds",
+    label: "PC Build",
+    href: "/pc-builds",
     icon: Monitor,
   },
   {
     label: "Quản lý đơn hàng",
-    href: "/admin/orders",
+    href: "/orders",
+    icon: ShoppingCart,
+  },
+  {
+    label: "Chuẩn bị đơn hàng",
+    href: "/order-preparation",
+    icon: ShoppingCart,
+  },
+  {
+    label: "Tạo đơn hàng",
+    href: "/create-orders",
     icon: ShoppingCart,
   },
   {
     label: "Quản lý bảo hành",
-    href: "/admin/warranty",
+    href: "/warranty",
     icon: Shield,
   },
 ];

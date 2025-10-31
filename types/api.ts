@@ -5,6 +5,15 @@ export interface ApiResponse<T> {
   result?: T;
 }
 
+// Paginated Response wrapper
+export interface PaginatedResponse<T> {
+  items: T[];
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalCount: number;
+}
+
 // Account types
 export interface AccountResponse {
   id: string;
@@ -135,6 +144,8 @@ export interface PcBuildResponse {
   thumbnail: string;
   subCategoryId: string;
   subCategoryName: string;
+  categoryId: string;
+  categoryName: string;
 }
 
 export interface PcBuildItemResponse {

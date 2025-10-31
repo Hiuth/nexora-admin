@@ -155,12 +155,6 @@ export interface CreatePcBuildRequest {
   price: number;
   description?: string;
   status: string;
-  thumbnail: string;
-  subCategoryId: string;
-  items: {
-    productId: string;
-    quantity: number;
-  }[];
 }
 
 export interface UpdatePcBuildRequest {
@@ -168,8 +162,6 @@ export interface UpdatePcBuildRequest {
   price?: number;
   description?: string;
   status?: string;
-  thumbnail?: string;
-  subCategoryId?: string;
 }
 
 // Warranty request types

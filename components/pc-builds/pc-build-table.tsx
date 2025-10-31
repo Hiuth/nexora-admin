@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -13,49 +13,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Edit, Plus, Search, Trash2, Settings } from "lucide-react";
-import { toast } from "sonner";
+import { Eye, Edit, Plus, Search, Trash2 } from "lucide-react";
 import { PcBuildResponse, DialogMode } from "@/types";
-import { pcBuildService } from "@/lib/api";
-import { PcBuildDialog } from "./pc-build-dialog";
+import { PcBuildDialogNew } from "./pc-build-dialog-new";
 import { getStatusColor, getStatusText, formatCurrency } from "@/lib/api-utils";
+import { usePcBuildsContext } from "./pc-builds-context";
 
 export function PcBuildTable() {
-  const [pcBuilds, setPcBuilds] = useState<PcBuildResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    pcBuilds,
+    categories,
+    subCategories,
+    loading,
+    creating,
+    updating,
+    deleting,
+    currentPage,
+    totalPages,
+    totalCount,
+    createPcBuild,
+    updatePcBuild,
+    deletePcBuild,
+    loadSubCategoriesByCategoryId,
+    changePage,
+  } = usePcBuildsContext();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>("create");
   const [selectedPcBuild, setSelectedPcBuild] = useState<
     PcBuildResponse | undefined
   >();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 10;
 
-  useEffect(() => {
-    loadPcBuilds();
-  }, [currentPage]);
-
-  const loadPcBuilds = async () => {
-    try {
-      setLoading(true);
-      const response = await pcBuildService.getAll(currentPage, pageSize);
-      if (response.Code === 1000 && response.Result) {
-        setPcBuilds(response.Result.Items || []);
-        setTotalPages(response.Result.TotalPages || 1);
-      }
-    } catch (error) {
-      toast.error("Không thể tải danh sách PC Build");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Filter PC Builds based on search term
   const filteredPcBuilds = pcBuilds.filter(
     (pcBuild) =>
       pcBuild.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pcBuild.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      pcBuild.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pcBuild.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pcBuild.subCategoryName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCreate = () => {
@@ -77,20 +73,11 @@ export function PcBuildTable() {
   };
 
   const handleDelete = async (pcBuild: PcBuildResponse) => {
-    if (confirm("Bạn có chắc chắn muốn xóa PC Build này?")) {
-      try {
-        await pcBuildService.delete(pcBuild.id);
-        toast.success("Xóa PC Build thành công");
-        loadPcBuilds();
-      } catch (error) {
-        toast.error("Không thể xóa PC Build");
-      }
+    if (
+      confirm(`Bạn có chắc chắn muốn xóa PC Build "${pcBuild.productName}"?`)
+    ) {
+      await deletePcBuild(pcBuild.id);
     }
-  };
-
-  const handleManageItems = (pcBuild: PcBuildResponse) => {
-    // Navigate to PC Build Items management
-    window.location.href = `/admin/pc-builds/${pcBuild.id}/items`;
   };
 
   const handleDialogClose = () => {
@@ -98,12 +85,8 @@ export function PcBuildTable() {
     setSelectedPcBuild(undefined);
   };
 
-  const handleDialogSubmit = () => {
-    loadPcBuilds();
-  };
-
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    changePage(page);
   };
 
   if (loading) {
@@ -121,10 +104,15 @@ export function PcBuildTable() {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Quản lý PC Build</CardTitle>
-            <Button onClick={handleCreate}>
+            <div>
+              <CardTitle>Quản lý PC Build</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Tổng cộng: {totalCount} PC Build
+              </p>
+            </div>
+            <Button onClick={handleCreate} disabled={creating}>
               <Plus className="w-4 h-4 mr-2" />
-              Thêm PC Build
+              {creating ? "Đang tạo..." : "Thêm PC Build"}
             </Button>
           </div>
           <div className="flex items-center space-x-2">
@@ -148,6 +136,7 @@ export function PcBuildTable() {
                   <TableHead>Tên PC Build</TableHead>
                   <TableHead>Giá</TableHead>
                   <TableHead>Danh mục</TableHead>
+                  <TableHead>Danh mục con</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Mô tả</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
@@ -156,8 +145,10 @@ export function PcBuildTable() {
               <TableBody>
                 {filteredPcBuilds.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      Không có dữ liệu
+                    <TableCell colSpan={8} className="text-center py-8">
+                      {searchTerm
+                        ? "Không tìm thấy PC Build nào"
+                        : "Chưa có PC Build nào"}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -171,8 +162,8 @@ export function PcBuildTable() {
                             className="w-16 h-16 object-cover rounded"
                           />
                         ) : (
-                          <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
-                            <span className="text-xs text-gray-500">
+                          <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground">
                               No Image
                             </span>
                           </div>
@@ -186,6 +177,11 @@ export function PcBuildTable() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">
+                          {pcBuild.categoryName}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
                           {pcBuild.subCategoryName}
                         </Badge>
                       </TableCell>
@@ -222,17 +218,9 @@ export function PcBuildTable() {
                             size="sm"
                             onClick={() => handleEdit(pcBuild)}
                             title="Chỉnh sửa"
+                            disabled={updating}
                           >
                             <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleManageItems(pcBuild)}
-                            title="Quản lý linh kiện"
-                            className="text-blue-600 hover:text-blue-700"
-                          >
-                            <Settings className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -240,6 +228,7 @@ export function PcBuildTable() {
                             onClick={() => handleDelete(pcBuild)}
                             title="Xóa"
                             className="text-red-600 hover:text-red-700"
+                            disabled={deleting === pcBuild.id}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -279,12 +268,15 @@ export function PcBuildTable() {
         </CardContent>
       </Card>
 
-      <PcBuildDialog
+      <PcBuildDialogNew
         open={dialogOpen}
         mode={dialogMode}
         data={selectedPcBuild}
         onClose={handleDialogClose}
-        onSubmit={handleDialogSubmit}
+        onSubmit={() => {
+          // Refresh data after successful operation
+          // The hook handles this automatically
+        }}
       />
     </div>
   );

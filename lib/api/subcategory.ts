@@ -61,6 +61,6 @@ export const subCategoryService = {
     categoryId: string
   ): Promise<ApiResponse<SubCategoryResponse[]>> =>
     apiCall(
-      `${API_CONFIG.ENDPOINTS.SUBCATEGORY.GET_ALL}/getByCategoryId/${categoryId}`
+      `${API_CONFIG.ENDPOINTS.SUBCATEGORY.GET_BY_CATEGORY_ID}/${categoryId}`
     ),
 };

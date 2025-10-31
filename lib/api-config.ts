@@ -30,6 +30,7 @@ export const API_CONFIG = {
     SUBCATEGORY: {
       GET_ALL: "/SubCategory/getAll",
       GET_BY_ID: "/SubCategory/getById",
+      GET_BY_CATEGORY_ID: "/SubCategory/getByCategoryId",
       CREATE: "/SubCategory/create",
       UPDATE: "/SubCategory/update",
       DELETE: "/SubCategory/delete",
@@ -59,9 +60,19 @@ export const API_CONFIG = {
     PC_BUILD: {
       GET_ALL: "/PcBuild/getAll",
       GET_BY_ID: "/PcBuild/getById",
+      GET_BY_CATEGORY_ID: "/PcBuild/getByCategory",
+      GET_BY_SUBCATEGORY_ID: "/PcBuild/getBySubCategory",
       CREATE: "/PcBuild/create",
       UPDATE: "/PcBuild/update",
       DELETE: "/PcBuild/delete",
+    },
+
+    PC_BUILD_ITEM: {
+      GET_BY_PC_BUILD_ID: "/PcBuildItem/getByPcBuildId",
+      GET_BY_ID: "/PcBuildItem/getById",
+      CREATE: "/PcBuildItem/create",
+      UPDATE: "/PcBuildItem/update",
+      DELETE: "/PcBuildItem/delete",
     },
 
     WARRANTY: {

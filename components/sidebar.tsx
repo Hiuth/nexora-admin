@@ -48,7 +48,7 @@ const menuGroups = [
       },
       {
         label: "Máy Tính Xây Sẵn",
-        href: "/configurable-products",
+        href: "/pc-builds",
         icon: Monitor,
       },
       {

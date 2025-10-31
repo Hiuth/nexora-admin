@@ -117,9 +117,7 @@ export function ProductSelector({
     <div className="space-y-4">
       {/* Category Selector */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">
-          Chọn danh mục
-        </label>
+        <label className="text-sm font-medium">Chọn danh mục</label>
         <Select
           value={selectedCategoryId}
           onValueChange={handleCategoryChange}
@@ -188,11 +186,11 @@ export function ProductSelector({
             }
           >
             {selectedProduct && (
-              <div className="flex items-center gap-2">
-                <span className="font-medium">
+              <div className="flex items-center gap-1 sm:gap-2 w-full">
+                <span className="font-medium text-sm sm:text-base truncate flex-1">
                   {selectedProduct.productName}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground hidden sm:inline">
                   ID: {selectedProduct.id}
                 </span>
               </div>
@@ -213,9 +211,11 @@ export function ProductSelector({
           ) : (
             filteredProducts.map((product) => (
               <SelectItem key={product.id} value={product.id}>
-                <div className="flex flex-col">
-                  <span className="font-medium">{product.productName}</span>
-                  <span className="text-xs text-muted-foreground">
+                <div className="flex flex-col w-full">
+                  <span className="font-medium text-sm sm:text-base truncate">
+                    {product.productName}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate">
                     ID: {product.id} • {product.brandName}
                   </span>
                 </div>
@@ -226,24 +226,40 @@ export function ProductSelector({
       </Select>
 
       {selectedProduct && (
-        <div className="bg-muted/50 rounded-lg p-4">
+        <div className="bg-muted/50 rounded-lg p-3 sm:p-4">
           <h4 className="font-medium text-sm mb-2">Sản phẩm đã chọn:</h4>
-          <div className="space-y-1 text-sm text-muted-foreground">
-            <div>
-              <strong>Tên:</strong> {selectedProduct.productName}
+          <div className="space-y-1 text-sm">
+            <div className="flex flex-col sm:flex-row sm:gap-2">
+              <strong className="min-w-0 sm:min-w-[120px]">Tên:</strong>
+              <span className="text-muted-foreground truncate">
+                {selectedProduct.productName}
+              </span>
             </div>
-            <div>
-              <strong>Thương hiệu:</strong> {selectedProduct.brandName}
+            <div className="flex flex-col sm:flex-row sm:gap-2">
+              <strong className="min-w-0 sm:min-w-[120px]">Thương hiệu:</strong>
+              <span className="text-muted-foreground">
+                {selectedProduct.brandName}
+              </span>
             </div>
-            <div>
-              <strong>Danh mục:</strong> {selectedProduct.categoryName}
+            <div className="flex flex-col sm:flex-row sm:gap-2">
+              <strong className="min-w-0 sm:min-w-[120px]">Danh mục:</strong>
+              <span className="text-muted-foreground">
+                {selectedProduct.categoryName}
+              </span>
             </div>
-            <div>
-              <strong>Danh mục phụ:</strong> {selectedProduct.subCategoryName}
+            <div className="flex flex-col sm:flex-row sm:gap-2">
+              <strong className="min-w-0 sm:min-w-[120px]">
+                Danh mục phụ:
+              </strong>
+              <span className="text-muted-foreground">
+                {selectedProduct.subCategoryName}
+              </span>
             </div>
-            <div>
-              <strong>Giá:</strong>{" "}
-              {selectedProduct.price.toLocaleString("vi-VN")} VND
+            <div className="flex flex-col sm:flex-row sm:gap-2">
+              <strong className="min-w-0 sm:min-w-[120px]">Giá:</strong>
+              <span className="text-muted-foreground font-medium">
+                {selectedProduct.price.toLocaleString("vi-VN")} VND
+              </span>
             </div>
           </div>
         </div>

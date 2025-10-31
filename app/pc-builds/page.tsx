@@ -1,17 +1,19 @@
 import AdminLayout from "@/components/admin-layout";
-import { PcBuildTable } from "@/components/pc-builds/pc-build-table-new";
+import { PcBuildTable, PcBuildsProvider } from "@/components/pc-builds";
 
 export default function PcBuildsPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Tạo Đơn Hàng</h1>
+          <h1 className="text-3xl font-bold text-foreground">PC Build</h1>
           <p className="text-muted-foreground mt-2">
-            Tạo và quản lý đơn hàng mới
+            Quản lý các cấu hình máy tính xây sẵn
           </p>
         </div>
-        <PcBuildTable />
+        <PcBuildsProvider>
+          <PcBuildTable />
+        </PcBuildsProvider>
       </div>
     </AdminLayout>
   );

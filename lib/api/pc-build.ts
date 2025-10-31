@@ -6,21 +6,24 @@ import {
   UpdatePcBuildRequest,
 } from "@/types";
 import { apiCall } from "./base";
+import { API_CONFIG } from "../api-config";
 
 export const pcBuildService = {
   create: async (
-    subCategoryId: string,
+    categoryId: string,
+    subCategoryId: string | null,
     data: CreatePcBuildRequest,
     file: File
   ): Promise<ApiResponse<PcBuildResponse>> => {
     const formData = new FormData();
-    formData.append("productName", data.productName);
-    formData.append("price", data.price.toString());
+    if (subCategoryId) formData.append("subCategoryId", subCategoryId);
+    formData.append("pcBuildName", data.productName);
     if (data.description) formData.append("description", data.description);
+    formData.append("price", data.price.toString());
     formData.append("status", data.status);
-    if (file) formData.append("file", file);
+    formData.append("file", file);
 
-    return apiCall(`/PcBuild/create/${subCategoryId}`, {
+    return apiCall(`${API_CONFIG.ENDPOINTS.PC_BUILD.CREATE}/${categoryId}`, {
       method: "POST",
       headers: {},
       body: formData,
@@ -28,19 +31,22 @@ export const pcBuildService = {
   },
 
   update: async (
-    id: string,
-    subCategoryId: string,
-    data: UpdatePcBuildRequest,
+    pcBuildId: string,
+    categoryId?: string,
+    subCategoryId?: string,
+    data?: UpdatePcBuildRequest,
     file?: File
   ): Promise<ApiResponse<PcBuildResponse>> => {
     const formData = new FormData();
-    if (data.productName) formData.append("productName", data.productName);
-    if (data.price) formData.append("price", data.price.toString());
-    if (data.description) formData.append("description", data.description);
-    if (data.status) formData.append("status", data.status);
+    if (categoryId) formData.append("categoryId", categoryId);
+    if (subCategoryId) formData.append("subCategoryId", subCategoryId);
+    if (data?.productName) formData.append("pcBuildName", data.productName);
+    if (data?.description) formData.append("description", data.description);
+    if (data?.price) formData.append("price", data.price.toString());
+    if (data?.status) formData.append("status", data.status);
     if (file) formData.append("file", file);
 
-    return apiCall(`/PcBuild/update/${id}?subCategoryId=${subCategoryId}`, {
+    return apiCall(`${API_CONFIG.ENDPOINTS.PC_BUILD.UPDATE}/${pcBuildId}`, {
       method: "PUT",
       headers: {},
       body: formData,
@@ -51,10 +57,12 @@ export const pcBuildService = {
     pageNumber: number = 1,
     pageSize: number = 10
   ): Promise<ApiResponse<any>> =>
-    apiCall(`/PcBuild/getAll?pageNumber=${pageNumber}&pageSize=${pageSize}`),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.PC_BUILD.GET_ALL}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    ),
 
-  getById: async (id: string): Promise<ApiResponse<PcBuildResponse>> =>
-    apiCall(`/PcBuild/getById/${id}`),
+  getById: async (pcBuildId: string): Promise<ApiResponse<PcBuildResponse>> =>
+    apiCall(`${API_CONFIG.ENDPOINTS.PC_BUILD.GET_BY_ID}/${pcBuildId}`),
 
   getBySubCategoryId: async (
     subCategoryId: string,
@@ -62,11 +70,22 @@ export const pcBuildService = {
     pageSize: number = 10
   ): Promise<ApiResponse<any>> =>
     apiCall(
-      `/PcBuild/getBySubCategoryId/${subCategoryId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+      `${API_CONFIG.ENDPOINTS.PC_BUILD.GET_BY_SUBCATEGORY_ID}/${subCategoryId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
     ),
 
-  delete: async (id: string): Promise<ApiResponse<string>> =>
-    apiCall(`/PcBuild/delete/${id}`, { method: "DELETE" }),
+  getByCategoryId: async (
+    categoryId: string,
+    pageNumber: number = 1,
+    pageSize: number = 10
+  ): Promise<ApiResponse<any>> =>
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.PC_BUILD.GET_BY_CATEGORY_ID}/${categoryId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    ),
+
+  delete: async (pcBuildId: string): Promise<ApiResponse<string>> =>
+    apiCall(`${API_CONFIG.ENDPOINTS.PC_BUILD.DELETE}/${pcBuildId}`, {
+      method: "DELETE",
+    }),
 };
 
 export const pcBuildItemService = {
@@ -75,29 +94,39 @@ export const pcBuildItemService = {
     productId: string,
     data: any
   ): Promise<ApiResponse<PcBuildItemResponse>> =>
-    apiCall(`/PcBuildItem/create/${pcBuildId}/${productId}`, {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.PC_BUILD_ITEM.CREATE}/${pcBuildId}/${productId}`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    ),
 
   update: async (
     id: string,
     productId: string,
     data: any
   ): Promise<ApiResponse<PcBuildItemResponse>> =>
-    apiCall(`/PcBuildItem/update/${id}?productId=${productId}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.PC_BUILD_ITEM.UPDATE}/${id}?productId=${productId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    ),
 
   getById: async (id: string): Promise<ApiResponse<PcBuildItemResponse>> =>
-    apiCall(`/PcBuildItem/getById/${id}`),
+    apiCall(`${API_CONFIG.ENDPOINTS.PC_BUILD_ITEM.GET_BY_ID}/${id}`),
 
   getByPcBuildId: async (
     pcBuildId: string
   ): Promise<ApiResponse<PcBuildItemResponse[]>> =>
-    apiCall(`/PcBuildItem/getByPcBuildId/${pcBuildId}`),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.PC_BUILD_ITEM.GET_BY_PC_BUILD_ID}/${pcBuildId}`
+    ),
 
   delete: async (id: string): Promise<ApiResponse<string>> =>
-    apiCall(`/PcBuildItem/delete/${id}`, { method: "DELETE" }),
+    apiCall(`${API_CONFIG.ENDPOINTS.PC_BUILD_ITEM.DELETE}/${id}`, {
+      method: "DELETE",
+    }),
 };
