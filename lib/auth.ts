@@ -89,6 +89,38 @@ export class AuthManager {
       }
     }
   }
+
+  // Refresh token using current token
+  static async refreshToken(): Promise<string | null> {
+    const currentToken = this.getToken();
+
+    if (!currentToken) {
+      return null;
+    }
+
+    try {
+      const response = await authAPI.refreshToken(currentToken);
+      if (response.code === 1000 && response.result) {
+        // Lưu token mới
+        this.saveToken(response.result);
+        return response.result;
+      } else {
+        // Refresh thất bại, logout
+        this.removeToken();
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+        return null;
+      }
+    } catch (error) {
+      console.error("Refresh token failed:", error);
+      this.removeToken();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+      return null;
+    }
+  }
 }
 
 // Auth API functions
@@ -101,6 +133,12 @@ export interface LoginResponse {
   code: number;
   message: string;
   result?: string; // JWT token
+}
+
+export interface RefreshTokenResponse {
+  code: number;
+  message: string;
+  result?: string; // New JWT token
 }
 
 export const authAPI = {
@@ -134,6 +172,22 @@ export const authAPI = {
     } finally {
       AuthManager.removeToken();
     }
+  },
+
+  refreshToken: async (refreshToken: string): Promise<RefreshTokenResponse> => {
+    const formData = new FormData();
+    formData.append("refreshToken", refreshToken);
+
+    const response = await fetch(
+      buildApiUrl(API_CONFIG.ENDPOINTS.REFRESH_TOKEN),
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+    return data;
   },
 
   sendOtpForgotPassword: async (): Promise<any> => {

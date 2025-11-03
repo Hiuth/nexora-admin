@@ -56,7 +56,8 @@ export default function LoginPage() {
       if (response.code === 1000 && response.result) {
         console.log("Login successful!");
 
-        // Chỉ lưu token, không lưu user info
+        // Lưu access token (result chính là access token)
+        // Trong JWT, refresh token sẽ được embedded hoặc xử lý riêng
         AuthManager.saveToken(response.result);
 
         // Show success message

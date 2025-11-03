@@ -6,6 +6,7 @@ export const API_CONFIG = {
     // Auth endpoints
     LOGIN: "/Auth/login",
     LOGOUT: "/Auth/logout",
+    REFRESH_TOKEN: "/Auth/refresh",
     SEND_OTP_FORGOT_PASSWORD: "/Auth/send-otp-forgot-password",
     RESET_PASSWORD: "/Auth/reset-password",
 

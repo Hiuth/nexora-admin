@@ -56,20 +56,23 @@ export function useAuth() {
   const router = useRouter();
 
   const login = (token: string) => {
-    // Chỉ lưu token, không decode user info
+    // Lưu token
     AuthManager.saveToken(token);
     router.push("/");
   };
 
   const logout = async () => {
     try {
-      // Call logout API
-      await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.LOGOUT), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${AuthManager.getToken()}`,
-        },
-      });
+      // Call logout API với token hiện tại
+      const token = AuthManager.getToken();
+      if (token) {
+        await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.LOGOUT), {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
     } catch (error) {
       console.error("Logout error:", error);
     } finally {

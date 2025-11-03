@@ -24,14 +24,37 @@ export async function apiCall<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    let response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    // If 401 and we have a token, try to refresh
+    if (response.status === 401 && token) {
+      try {
+        const newToken = await AuthManager.refreshToken();
+        if (newToken) {
+          // Retry with new token
+          headers["Authorization"] = `Bearer ${newToken}`;
+          response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
+            ...options,
+            headers,
+          });
+        }
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+        // Let the original 401 response through
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error(`API call failed for ${endpoint}:`, error);
+    throw error;
   }
-
-  return response.json();
 }

@@ -1,4 +1,5 @@
 import { ApiResponse } from "@/types/api";
+import { apiClient } from "./api-interceptor";
 
 // Utility functions for handling API responses and data transformation
 
@@ -12,6 +13,32 @@ export const handleApiResponse = <T>(response: ApiResponse<T>): T => {
   }
 
   return response.result;
+};
+
+// Enhanced API call with auto refresh token
+export const callApiWithAuth = async <T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> => {
+  const response = await apiClient.get<ApiResponse<T>>(endpoint);
+  return handleApiResponse(response);
+};
+
+// API call with FormData and auto refresh token
+export const callApiWithFormData = async <T>(
+  endpoint: string,
+  formData: FormData,
+  method: "POST" | "PUT" | "PATCH" = "POST"
+): Promise<T> => {
+  let response: ApiResponse<T>;
+
+  if (method === "POST") {
+    response = await apiClient.postFormData<ApiResponse<T>>(endpoint, formData);
+  } else {
+    response = await apiClient.putFormData<ApiResponse<T>>(endpoint, formData);
+  }
+
+  return handleApiResponse(response);
 };
 
 export const formatCurrency = (amount: number): string => {
