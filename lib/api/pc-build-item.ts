@@ -31,8 +31,14 @@ export const pcBuildItemService = {
     data?: UpdatePcBuildItemRequest
   ): Promise<ApiResponse<PcBuildItemResponse>> => {
     const formData = new FormData();
-    if (productId) formData.append("productId", productId);
-    if (data?.quantity) formData.append("quantity", data.quantity.toString());
+
+    // Only append fields that are provided (indicating they have changed)
+    if (productId !== undefined) {
+      formData.append("productId", productId);
+    }
+    if (data?.quantity !== undefined) {
+      formData.append("quantity", data.quantity.toString());
+    }
 
     return apiCall(
       `${API_CONFIG.ENDPOINTS.PC_BUILD_ITEM.UPDATE}/${pcBuildItemId}`,

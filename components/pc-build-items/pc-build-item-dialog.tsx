@@ -249,12 +249,30 @@ export function PcBuildItemDialog({
     setLoading(true);
     try {
       if (isEditing && pcBuildItem) {
-        // Update PC Build Item
+        // Check what has actually changed
+        const hasProductChanged = data.productId !== pcBuildItem.productId;
+        const hasQuantityChanged = data.quantity !== pcBuildItem.quantity;
+
+        // Only proceed if something has changed
+        if (!hasProductChanged && !hasQuantityChanged) {
+          toast.info("Không có thay đổi nào để cập nhật");
+          onOpenChange(false);
+          return;
+        }
+
+        // Prepare update data with only changed fields
+        const updateData: { quantity?: number } = {};
+        if (hasQuantityChanged) {
+          updateData.quantity = data.quantity;
+        }
+
+        // Update PC Build Item - only send productId if it changed, otherwise undefined
         const response = await pcBuildItemService.update(
           pcBuildItem.id,
-          data.productId,
-          { quantity: data.quantity }
+          hasProductChanged ? data.productId : undefined,
+          Object.keys(updateData).length > 0 ? updateData : undefined
         );
+
         if (response.code === 1000) {
           toast.success("Cập nhật linh kiện thành công");
           onSuccess();
