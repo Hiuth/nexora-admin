@@ -129,17 +129,13 @@ export function useProductAttributes() {
 
   // Update product attribute
   const updateProductAttribute = useCallback(
-    async (
-      productAttributeId: string,
-      attributeId?: string,
-      value?: string
-    ) => {
+    async (productAttributeId: string, attributeId: string, value: string) => {
       setUpdating(true);
       try {
         const response = await productAttributeService.update(
           productAttributeId,
           attributeId,
-          value ? { value } : undefined
+          value
         );
 
         if (response.result) {

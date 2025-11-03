@@ -15,8 +15,9 @@ import {
   AttributesResponse,
   ProductResponse,
 } from "@/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, Tag } from "lucide-react";
 import { ProductAttributeFormFields } from "./product-attribute-form-fields";
+import { toast } from "sonner";
 
 interface ProductAttributeDialogProps {
   isOpen: boolean;
@@ -32,8 +33,8 @@ interface ProductAttributeDialogProps {
   ) => Promise<boolean>;
   onUpdate: (
     productAttributeId: string,
-    attributeId?: string,
-    value?: string
+    attributeId: string,
+    value: string
   ) => Promise<boolean>;
   loading?: boolean;
 }
@@ -96,10 +97,31 @@ export function ProductAttributeDialog({
 
     let success = false;
     if (productAttribute) {
+      // Check what has actually changed
+      const hasAttributeChanged =
+        formData.attributeId !== productAttribute.attributeId;
+      const hasValueChanged = formData.value.trim() !== productAttribute.value;
+
+      // Only proceed if something has changed
+      if (!hasAttributeChanged && !hasValueChanged) {
+        toast.info("Không có thay đổi nào để cập nhật");
+        onOpenChange(false);
+        return;
+      }
+
+      // For update, we need to send the actual values, not just changed ones
+      // Send the current attributeId if it hasn't changed, or the new one if it has
+      const attributeIdToSend = hasAttributeChanged
+        ? formData.attributeId
+        : productAttribute.attributeId;
+      const valueToSend = hasValueChanged
+        ? formData.value.trim()
+        : productAttribute.value;
+
       success = await onUpdate(
         productAttribute.id,
-        formData.attributeId,
-        formData.value.trim()
+        attributeIdToSend,
+        valueToSend
       );
     } else {
       success = await onSubmit(
@@ -126,21 +148,20 @@ export function ProductAttributeDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>
-            {productAttribute
-              ? "Chỉnh sửa thuộc tính sản phẩm"
-              : "Thêm thuộc tính sản phẩm"}
+          <DialogTitle className="flex items-center gap-2">
+            <Tag className="h-5 w-5" />
+            {productAttribute ? "Chỉnh Sửa Thuộc Tính" : "Thêm Thuộc Tính Mới"}
           </DialogTitle>
           <DialogDescription>
             {productAttribute
-              ? "Cập nhật giá trị thuộc tính cho sản phẩm."
+              ? "Cập nhật giá trị thuộc tính cho sản phẩm"
               : selectedProduct
               ? `Thêm thuộc tính cho sản phẩm "${selectedProduct.productName}" (${selectedProduct.categoryName}). Chỉ hiển thị thuộc tính chưa được sử dụng.`
-              : "Thêm giá trị thuộc tính mới cho sản phẩm."}
+              : "Thêm giá trị thuộc tính mới cho sản phẩm"}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <ProductAttributeFormFields
             attributeId={formData.attributeId}
             onAttributeIdChange={(value) =>
@@ -154,7 +175,7 @@ export function ProductAttributeDialog({
             errors={errors}
           />
 
-          <DialogFooter>
+          <div className="flex justify-end space-x-2 pt-4 border-t">
             <Button
               type="button"
               variant="outline"
@@ -165,9 +186,9 @@ export function ProductAttributeDialog({
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {productAttribute ? "Cập nhật" : "Tạo mới"}
+              {productAttribute ? "Cập Nhật" : "Thêm Mới"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

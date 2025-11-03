@@ -49,7 +49,20 @@ export async function apiCall<T>(
     }
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Try to get error details from response
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+        console.error(`API Error Details for ${endpoint}:`, errorData);
+      } catch (parseError) {
+        console.error(`Failed to parse error response for ${endpoint}`);
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();

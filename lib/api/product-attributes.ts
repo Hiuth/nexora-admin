@@ -28,16 +28,14 @@ export const productAttributeService = {
 
   update: async (
     productAttributeId: string,
-    attributeId?: string,
-    data?: UpdateProductAttributeRequest
+    attributeId: string,
+    value: string
   ): Promise<ApiResponse<ProductAttributeResponse>> => {
     const formData = new FormData();
-    if (attributeId) {
-      formData.append("attributeId", attributeId);
-    }
-    if (data?.value) {
-      formData.append("value", data.value);
-    }
+
+    // Always append both fields as they are required
+    formData.append("attributeId", attributeId);
+    formData.append("value", value);
 
     return apiCall(
       `${API_CONFIG.ENDPOINTS.PRODUCT_ATTRIBUTE.UPDATE}/${productAttributeId}`,
