@@ -16,7 +16,12 @@ export function usePcBuildFormData() {
 
   const handleFormDataChange = useCallback(
     (newData: Partial<PcBuildFormData>) => {
-      setFormData((prev: PcBuildFormData) => ({ ...prev, ...newData }));
+      // Always ensure price remains 0
+      const dataToUpdate = { ...newData };
+      if (dataToUpdate.price !== undefined) {
+        dataToUpdate.price = 0;
+      }
+      setFormData((prev: PcBuildFormData) => ({ ...prev, ...dataToUpdate }));
     },
     []
   );
@@ -26,7 +31,7 @@ export function usePcBuildFormData() {
       if (mode === "edit" && data) {
         setFormData({
           productName: data.productName,
-          price: data.price,
+          price: 0, // Always set price to 0
           description: data.description || "",
           status: data.status,
           categoryId: data.categoryId,
@@ -35,7 +40,7 @@ export function usePcBuildFormData() {
       } else {
         setFormData({
           productName: "",
-          price: 0,
+          price: 0, // Always set price to 0
           description: "",
           status: "ACTIVE",
           categoryId: "",

@@ -107,19 +107,18 @@ export function PcBuildFormFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="price">
-          Giá (VNĐ) <span className="text-destructive">*</span>
-        </Label>
+        <Label htmlFor="price">Giá (VNĐ)</Label>
         <Input
           id="price"
           type="number"
           value={formData.price}
           onChange={(e) => onFormDataChange({ price: Number(e.target.value) })}
-          placeholder="Nhập giá"
-          required
+          placeholder="0"
+          readOnly
           disabled={isViewMode}
           min="0"
           step="1000"
+          className="bg-muted/50 cursor-not-allowed"
         />
       </div>
 

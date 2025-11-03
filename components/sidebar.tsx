@@ -61,6 +61,11 @@ const menuGroups = [
         href: "/product-attributes",
         icon: Settings,
       },
+      {
+        label: "Linh Kiện Cấu Hình",
+        href: "/pc-build-items",
+        icon: Wrench,
+      },
     ],
   },
   {

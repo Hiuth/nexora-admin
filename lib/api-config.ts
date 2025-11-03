@@ -69,7 +69,7 @@ export const API_CONFIG = {
     },
 
     PC_BUILD_ITEM: {
-      GET_BY_PC_BUILD_ID: "/PcBuildItem/getByPcBuildId",
+      GET_BY_PC_BUILD_ID: "/PcBuildItem/getAllByPcBuildById",
       GET_BY_ID: "/PcBuildItem/getById",
       CREATE: "/PcBuildItem/create",
       UPDATE: "/PcBuildItem/update",

@@ -44,17 +44,23 @@ export const productService = {
     subCategoryId?: string
   ): Promise<ApiResponse<ProductResponse>> => {
     const formData = new FormData();
-    if (data.productName) formData.append("productName", data.productName);
-    if (data.price) formData.append("price", data.price.toString());
-    if (data.stockQuantity)
+
+    // Only append non-undefined values
+    if (data.productName !== undefined)
+      formData.append("productName", data.productName);
+    if (data.price !== undefined)
+      formData.append("price", data.price.toString());
+    if (data.stockQuantity !== undefined)
       formData.append("stockQuantity", data.stockQuantity.toString());
-    if (data.description) formData.append("description", data.description);
-    if (data.status) formData.append("status", data.status);
-    if (data.warrantyPeriod)
+    if (data.description !== undefined)
+      formData.append("description", data.description);
+    if (data.status !== undefined) formData.append("status", data.status);
+    if (data.warrantyPeriod !== undefined)
       formData.append("warrantyPeriod", data.warrantyPeriod.toString());
-    if (brandId) formData.append("brandId", brandId);
-    if (categoryId) formData.append("categoryId", categoryId);
-    if (subCategoryId) formData.append("subCategoryId", subCategoryId);
+    if (brandId !== undefined) formData.append("brandId", brandId);
+    if (categoryId !== undefined) formData.append("categoryId", categoryId);
+    if (subCategoryId !== undefined)
+      formData.append("subCategoryId", subCategoryId);
     if (thumbnail) formData.append("thumbnail", thumbnail);
 
     return apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.UPDATE}/${productId}`, {

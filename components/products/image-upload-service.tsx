@@ -11,12 +11,7 @@ export class ImageUploadService {
     try {
       for (let i = 0; i < additionalImages.length; i++) {
         const image = additionalImages[i];
-        console.log(
-          `Uploading additional image ${i + 1}/${additionalImages.length}:`,
-          image.name
-        );
         const response = await productImgService.create(productId, image);
-        console.log(`Upload response for image ${i + 1}:`, response);
 
         if (response.code !== 1000) {
           throw new Error(`Failed to upload image ${image.name}`);

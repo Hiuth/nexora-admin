@@ -134,6 +134,25 @@ export interface ProductUnitResponse {
   createdAt: Date;
 }
 
+// PC Build Item types
+export interface PcBuildItemResponse {
+  id: string;
+  pcBuildId: string;
+  productId: string;
+  quantity: number;
+  productName: string;
+  price: number;
+  thumbnail: string;
+}
+
+export interface CreatePcBuildItemRequest {
+  quantity: number;
+}
+
+export interface UpdatePcBuildItemRequest {
+  quantity?: number;
+}
+
 // PC Build types
 export interface PcBuildResponse {
   id: string;

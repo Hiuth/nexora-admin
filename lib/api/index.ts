@@ -8,6 +8,7 @@ export { productAttributeService } from "./product-attributes";
 export { productImgService } from "./product-img";
 export { productUnitService } from "./product-unit";
 export { orderService, orderDetailService } from "./order";
-export { pcBuildService, pcBuildItemService } from "./pc-build";
+export { pcBuildService } from "./pc-build";
+export { pcBuildItemService } from "./pc-build-item";
 export { warrantyService } from "./warranty";
 export { apiCall } from "./base";

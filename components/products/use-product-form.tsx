@@ -233,17 +233,14 @@ export function useProductForm({
 
     if (productResponse.code === 1000 && productResponse.result) {
       const productId = productResponse.result.id;
-      console.log("Product created successfully with ID:", productId);
 
       // Upload additional images if any
       if (additionalImages.length > 0) {
-        console.log("Starting upload of additional images...");
         try {
           await ImageUploadService.uploadAdditionalImages(
             productId,
             additionalImages
           );
-          console.log("All additional images uploaded successfully");
         } catch (error) {
           console.error("Failed to upload some additional images:", error);
           toast.warning(
@@ -260,74 +257,74 @@ export function useProductForm({
   const handleUpdate = async () => {
     if (!data) return;
 
-    // Update logic (chỉ gửi fields thay đổi)
-    const request: Partial<UpdateProductRequest> = {};
-    let brandId = data.brandId;
-    let categoryId = data.categoryId;
-    let subCategoryId = data.subCategoryId;
+    // Prepare update request - always include all fields that might have changed
+    const request: UpdateProductRequest = {};
+    let hasChanges = false;
 
+    // Check and include all potentially changed fields
     if (formData.productName !== data.productName) {
       request.productName = formData.productName;
+      hasChanges = true;
     }
     if (formData.price !== data.price) {
       request.price = formData.price;
+      hasChanges = true;
     }
     if (formData.stockQuantity !== data.stockQuantity) {
       request.stockQuantity = formData.stockQuantity;
+      hasChanges = true;
     }
-    if (formData.description !== data.description) {
+    if (formData.description !== (data.description || "")) {
       request.description = formData.description;
+      hasChanges = true;
     }
     if (formData.status !== data.status) {
       request.status = formData.status;
+      hasChanges = true;
     }
     if (formData.warrantyPeriod !== data.warrantyPeriod) {
       request.warrantyPeriod = formData.warrantyPeriod;
+      hasChanges = true;
     }
-    if (formData.brandId !== data.brandId) {
-      brandId = formData.brandId;
-    }
-    if (formData.categoryId !== data.categoryId) {
-      categoryId = formData.categoryId;
-    }
-    if (formData.subCategoryId !== data.subCategoryId) {
-      subCategoryId = formData.subCategoryId;
-    }
+
+    // Check for relationship changes
+    const brandChanged = formData.brandId !== data.brandId;
+    const categoryChanged = formData.categoryId !== data.categoryId;
+    const subCategoryChanged = formData.subCategoryId !== data.subCategoryId;
+    const hasNewThumbnail = thumbnail !== null;
+    const hasNewImages = additionalImages.length > 0;
 
     const hasFormChanges =
-      Object.keys(request).length > 0 ||
-      thumbnail ||
-      formData.brandId !== data.brandId ||
-      formData.categoryId !== data.categoryId ||
-      formData.subCategoryId !== data.subCategoryId;
-
-    const hasNewImages = additionalImages.length > 0;
+      hasChanges ||
+      brandChanged ||
+      categoryChanged ||
+      subCategoryChanged ||
+      hasNewThumbnail;
 
     if (hasFormChanges || hasNewImages) {
       // Update product info if there are form changes
       if (hasFormChanges) {
-        await productService.update(
+        const response = await productService.update(
           data.id,
-          request as UpdateProductRequest,
+          request,
           thumbnail || undefined,
-          brandId,
-          categoryId,
-          subCategoryId
+          brandChanged ? formData.brandId : undefined,
+          categoryChanged ? formData.categoryId : undefined,
+          subCategoryChanged ? formData.subCategoryId : undefined
         );
-        console.log("Product updated successfully");
+
+        if (response.code !== 1000) {
+          throw new Error("Failed to update product");
+        }
       }
 
       // Upload additional images if any (independent of form changes)
       if (hasNewImages) {
-        console.log(
-          "Starting upload of additional images for existing product..."
-        );
         try {
           await ImageUploadService.uploadAdditionalImages(
             data.id,
             additionalImages
           );
-          console.log("All additional images uploaded successfully");
         } catch (error) {
           console.error("Failed to upload some additional images:", error);
           toast.warning(
@@ -335,6 +332,7 @@ export function useProductForm({
               ? "Sản phẩm đã cập nhật thành công nhưng có lỗi khi tải một số ảnh bổ sung"
               : "Có lỗi khi tải ảnh bổ sung"
           );
+          return; // Don't throw here, as main update succeeded
         }
       }
 
