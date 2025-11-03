@@ -50,12 +50,17 @@ export const API_CONFIG = {
     },
 
     ORDER: {
-      GET_ALL: "/Order/getAll",
-      GET_BY_ID: "/Order/getById",
-      GET_BY_ACCOUNT_ID: "/Order/getByAccountId",
+      GET_ALL: "/Order/getAllOrders",
+      GET_BY_ACCOUNT_ID: "/Order/getOrderByAccountId",
       CREATE: "/Order/create",
       UPDATE: "/Order/update",
-      DELETE: "/Order/delete",
+      DELETE: "/Order/deleteOrder",
+    },
+
+    ORDER_DETAIL: {
+      CREATE: "/OrderDetail/createOrderDetail",
+      GET_BY_ORDER_ID: "/OrderDetail/getOrderDetails",
+      DELETE_BY_ORDER_ID: "/deleteOrderDetails",
     },
 
     PC_BUILD: {

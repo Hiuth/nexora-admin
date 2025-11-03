@@ -1,147 +1,199 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Trash2, CheckCircle, Clock } from "lucide-react";
+import { Package, ShoppingCart } from "lucide-react";
 import AdminLayout from "@/components/admin-layout";
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  customer: string;
-  total: number;
-  status: "pending" | "processing" | "completed";
-  date: string;
-}
-
-const mockOrders: Order[] = [
-  {
-    id: "1",
-    orderNumber: "ORD-001",
-    customer: "John Doe",
-    total: 299.99,
-    status: "completed",
-    date: "2024-01-15",
-  },
-  {
-    id: "2",
-    orderNumber: "ORD-002",
-    customer: "Jane Smith",
-    total: 599.99,
-    status: "processing",
-    date: "2024-01-16",
-  },
-  {
-    id: "3",
-    orderNumber: "ORD-003",
-    customer: "Bob Johnson",
-    total: 199.99,
-    status: "pending",
-    date: "2024-01-17",
-  },
-];
+import { OrderTable } from "@/components/orders/order-table";
+import { OrderDialog } from "@/components/orders/order-dialog";
+import { OrderDetailTable } from "@/components/orders/order-detail-table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useOrders } from "@/hooks/use-orders";
+import { useOrderDetails } from "@/hooks/use-order-details";
+import { OrderResponse, UpdateOrderRequest } from "@/types";
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState(mockOrders);
+  const { orders, loading, updating, deleting, updateOrder, deleteOrder } =
+    useOrders();
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle size={18} className="text-green-400" />;
-      case "processing":
-        return <Clock size={18} className="text-yellow-400" />;
-      default:
-        return <Clock size={18} className="text-gray-400" />;
-    }
+  const {
+    orderDetails,
+    loading: orderDetailsLoading,
+    deleting: deletingOrderDetails,
+    deleteOrderDetails,
+    loadOrderDetails,
+  } = useOrderDetails();
+
+  const [orderDialogOpen, setOrderDialogOpen] = useState(false);
+  const [orderDetailsModalOpen, setOrderDetailsModalOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<OrderResponse | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(
+    null
+  );
+
+  const handleEditOrder = (order: OrderResponse) => {
+    setEditingOrder(order);
+    setOrderDialogOpen(true);
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "Hoàn thành";
-      case "processing":
-        return "Đang xử lý";
-      default:
-        return "Chờ xử lý";
+  const handleViewOrderDetails = async (order: OrderResponse) => {
+    setSelectedOrder(order);
+    await loadOrderDetails(order.id);
+    setOrderDetailsModalOpen(true);
+  };
+
+  const handleUpdateOrder = async (
+    orderId: string,
+    data: UpdateOrderRequest
+  ) => {
+    return await updateOrder(orderId, data);
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    return await deleteOrder(orderId);
+  };
+
+  const handleDeleteOrderDetails = async (orderId: string) => {
+    const success = await deleteOrderDetails(orderId);
+    if (success && selectedOrder) {
+      // Reload order details after deleting
+      await loadOrderDetails(selectedOrder.id);
     }
+    return success;
   };
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
+            <Package className="h-8 w-8 text-white" />
+          </div>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Quản lý đơn hàng
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Quản lý tất cả đơn hàng từ khách hàng
+            <h1 className="text-3xl font-bold">Quản Lý Đơn Hàng</h1>
+            <p className="text-muted-foreground">
+              Xem và quản lý tất cả đơn hàng từ khách hàng
             </p>
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-muted border-b border-border">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Mã đơn hàng
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Khách hàng
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Tổng tiền
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Trạng thái
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Ngày
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                  Hành động
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="border-b border-border hover:bg-muted/50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-foreground font-medium">
-                    {order.orderNumber}
-                  </td>
-                  <td className="px-6 py-4 text-foreground">
-                    {order.customer}
-                  </td>
-                  <td className="px-6 py-4 text-foreground">${order.total}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(order.status)}
-                      <span className="text-sm text-muted-foreground">
-                        {getStatusLabel(order.status)}
-                      </span>
+        {/* Orders Management */}
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle>Danh Sách Đơn Hàng</CardTitle>
+              <CardDescription>Tất cả đơn hàng trong hệ thống</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <OrderTable
+              orders={orders}
+              onEdit={handleEditOrder}
+              onDelete={handleDeleteOrder}
+              onViewDetails={handleViewOrderDetails}
+              loading={loading}
+              deleting={deleting}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Edit Order Dialog */}
+        <OrderDialog
+          isOpen={orderDialogOpen}
+          onOpenChange={setOrderDialogOpen}
+          order={editingOrder}
+          onUpdate={handleUpdateOrder}
+          loading={updating}
+        />
+
+        {/* Order Details Modal */}
+        <Dialog
+          open={orderDetailsModalOpen}
+          onOpenChange={setOrderDetailsModalOpen}
+        >
+          <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5" />
+                Chi Tiết Đơn Hàng
+              </DialogTitle>
+              <DialogDescription>
+                {selectedOrder &&
+                  `Đơn hàng ${selectedOrder.id.slice(-8).toUpperCase()} - ${
+                    selectedOrder.CustomerName
+                  }`}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {selectedOrder && (
+                <div className="grid grid-cols-2 gap-6 p-4 bg-muted rounded-lg">
+                  <div>
+                    <h4 className="font-medium mb-2">Thông tin đơn hàng</h4>
+                    <div className="space-y-1 text-sm">
+                      <p>
+                        <span className="font-medium">Mã:</span>{" "}
+                        {selectedOrder.id.slice(-8).toUpperCase()}
+                      </p>
+                      <p>
+                        <span className="font-medium">Ngày:</span>{" "}
+                        {new Date(selectedOrder.orderDate).toLocaleDateString(
+                          "vi-VN"
+                        )}
+                      </p>
+                      <p>
+                        <span className="font-medium">Trạng thái:</span>{" "}
+                        {selectedOrder.status}
+                      </p>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground">
-                    {order.date}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 hover:bg-background rounded transition-colors">
-                        <Eye size={18} className="text-foreground" />
-                      </button>
-                      <button className="p-2 hover:bg-background rounded transition-colors">
-                        <Trash2 size={18} className="text-destructive" />
-                      </button>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Thông tin khách hàng</h4>
+                    <div className="space-y-1 text-sm">
+                      <p>
+                        <span className="font-medium">Tên:</span>{" "}
+                        {selectedOrder.CustomerName}
+                      </p>
+                      <p>
+                        <span className="font-medium">SĐT:</span>{" "}
+                        {selectedOrder.phoneNumber}
+                      </p>
+                      <p>
+                        <span className="font-medium">Địa chỉ:</span>{" "}
+                        {selectedOrder.address}
+                      </p>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center">
+                <h4 className="font-medium">Sản phẩm trong đơn hàng</h4>
+              </div>
+
+              <OrderDetailTable
+                orderDetails={orderDetails}
+                loading={orderDetailsLoading}
+                onDeleteAll={handleDeleteOrderDetails}
+                orderId={selectedOrder?.id}
+                deleting={deletingOrderDetails}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );

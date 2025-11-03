@@ -108,7 +108,7 @@ const menuGroups = [
       },
       {
         label: "Tạo Đơn Hàng",
-        href: "/orders/create",
+        href: "/create-orders",
         icon: Plus,
       },
       {

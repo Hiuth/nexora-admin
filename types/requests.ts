@@ -130,22 +130,25 @@ export interface UpdateCartRequest {
 
 // Order request types
 export interface CreateOrderRequest {
-  accountId: string;
+  status: string;
+  totalAmount: number;
   customerName: string;
   phoneNumber: string;
   address: string;
-  orderDetails: {
-    productId: string;
-    quantity: number;
-    unitPrice: number;
-  }[];
 }
 
 export interface UpdateOrderRequest {
   status?: string;
+  totalAmount?: number;
   customerName?: string;
   phoneNumber?: string;
   address?: string;
+}
+
+// OrderDetail request types
+export interface CreateOrderDetailRequest {
+  quantity: number;
+  unitPrice: number;
 }
 
 // PC Build request types
