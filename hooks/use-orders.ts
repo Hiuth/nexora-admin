@@ -55,7 +55,7 @@ export function useOrders() {
 
   // Create order
   const createOrder = useCallback(
-    async (data: CreateOrderRequest) => {
+    async (data: CreateOrderRequest): Promise<OrderResponse | null> => {
       setCreating(true);
       try {
         const response = await orderService.create(data);
@@ -69,9 +69,9 @@ export function useOrders() {
           // Reload orders
           await loadAllOrders();
           await loadUserOrders();
-          return true;
+          return response.result; // Return the created order
         }
-        return false;
+        return null;
       } catch (error) {
         console.error("Error creating order:", error);
         toast({
@@ -79,7 +79,7 @@ export function useOrders() {
           description: "Không thể tạo đơn hàng",
           variant: "destructive",
         });
-        return false;
+        return null;
       } finally {
         setCreating(false);
       }

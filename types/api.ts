@@ -76,7 +76,7 @@ export interface OrderResponse {
   status: string;
   accountId: string;
   totalAmount: number;
-  CustomerName: string;
+  customerName: string; // Match actual API response (camelCase)
   phoneNumber: string;
   address: string;
 }

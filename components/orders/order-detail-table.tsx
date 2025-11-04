@@ -72,7 +72,7 @@ export function OrderDetailTable({
                   <div>
                     <p className="font-medium">{item.productName}</p>
                     <p className="text-sm text-muted-foreground">
-                      Mã SP: {item.productId.slice(-8).toUpperCase()}
+                      Mã SP: {item.productId}
                     </p>
                   </div>
                 </TableCell>

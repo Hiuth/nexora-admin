@@ -63,7 +63,7 @@ export function OrderDialog({
       setFormData({
         status: order.status,
         totalAmount: order.totalAmount,
-        customerName: order.CustomerName,
+        customerName: order.customerName,
         phoneNumber: order.phoneNumber,
         address: order.address,
       });

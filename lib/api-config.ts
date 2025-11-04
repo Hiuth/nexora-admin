@@ -61,7 +61,7 @@ export const API_CONFIG = {
     ORDER_DETAIL: {
       CREATE: "/OrderDetail/createOrderDetail",
       GET_BY_ORDER_ID: "/OrderDetail/getOrderDetails",
-      DELETE_BY_ORDER_ID: "/OrderDetail/deleteOrderDetails",
+      DELETE_BY_ORDER_ID: "/deleteOrderDetails",
     },
 
     PC_BUILD: {

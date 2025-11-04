@@ -24,6 +24,25 @@ import { useOrders } from "@/hooks/use-orders";
 import { useOrderDetails } from "@/hooks/use-order-details";
 import { OrderResponse, UpdateOrderRequest } from "@/types";
 
+const getStatusText = (status: string) => {
+  switch (status.toUpperCase()) {
+    case "PENDING":
+      return "Chờ xử lý";
+    case "CONFIRMED":
+      return "Đã xác nhận";
+    case "PROCESSING":
+      return "Đang xử lý";
+    case "SHIPPED":
+      return "Đã gửi hàng";
+    case "DELIVERED":
+      return "Đã giao hàng";
+    case "CANCELLED":
+      return "Đã hủy";
+    default:
+      return status;
+  }
+};
+
 export default function OrdersPage() {
   const { orders, loading, updating, deleting, updateOrder, deleteOrder } =
     useOrders();
@@ -132,9 +151,7 @@ export default function OrdersPage() {
               </DialogTitle>
               <DialogDescription>
                 {selectedOrder &&
-                  `Đơn hàng ${selectedOrder.id.slice(-8).toUpperCase()} - ${
-                    selectedOrder.CustomerName
-                  }`}
+                  `Đơn hàng ${selectedOrder.id} - ${selectedOrder.customerName}`}
               </DialogDescription>
             </DialogHeader>
 
@@ -146,7 +163,7 @@ export default function OrdersPage() {
                     <div className="space-y-1 text-sm">
                       <p>
                         <span className="font-medium">Mã:</span>{" "}
-                        {selectedOrder.id.slice(-8).toUpperCase()}
+                        {selectedOrder.id}
                       </p>
                       <p>
                         <span className="font-medium">Ngày:</span>{" "}
@@ -156,7 +173,7 @@ export default function OrdersPage() {
                       </p>
                       <p>
                         <span className="font-medium">Trạng thái:</span>{" "}
-                        {selectedOrder.status}
+                        {getStatusText(selectedOrder.status)}
                       </p>
                     </div>
                   </div>
@@ -165,7 +182,7 @@ export default function OrdersPage() {
                     <div className="space-y-1 text-sm">
                       <p>
                         <span className="font-medium">Tên:</span>{" "}
-                        {selectedOrder.CustomerName}
+                        {selectedOrder.customerName}
                       </p>
                       <p>
                         <span className="font-medium">SĐT:</span>{" "}

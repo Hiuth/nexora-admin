@@ -140,11 +140,9 @@ export function OrderTable({
           <TableBody>
             {orders.map((order) => (
               <TableRow key={order.id}>
-                <TableCell className="font-medium">
-                  {order.id.slice(-8).toUpperCase()}
-                </TableCell>
+                <TableCell className="font-medium">{order.id}</TableCell>
                 <TableCell>{formatDate(order.orderDate)}</TableCell>
-                <TableCell>{order.CustomerName}</TableCell>
+                <TableCell>{order.customerName}</TableCell>
                 <TableCell>{order.phoneNumber}</TableCell>
                 <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
                 <TableCell>

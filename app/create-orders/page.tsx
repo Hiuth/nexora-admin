@@ -134,8 +134,8 @@ export default function CreateOrderPage() {
         return false;
       }
 
-      // Get the created order ID (you might need to adjust this based on your API response)
-      const createdOrderId = "temp-order-id"; // Replace with actual order ID from response
+      // Get the created order ID from the API response
+      const createdOrderId = orderResult.id; // Use actual order ID from response
 
       // Step 2: Create Order Details for each cart item
       let allDetailsCreated = true;
@@ -159,7 +159,7 @@ export default function CreateOrderPage() {
         setFlowState((prev) => ({
           ...prev,
           step: "completed",
-          createdOrder: { id: createdOrderId } as OrderResponse,
+          createdOrder: orderResult, // Store the full order response
         }));
 
         toast({
@@ -274,11 +274,8 @@ export default function CreateOrderPage() {
         {flowState.step === "completed" && (
           <Card className="border-0 shadow-lg bg-blue-50">
             <CardContent className="p-12 text-center">
-              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-blue-600 flex items-center justify-center">
-                <CheckCircle2 className="h-12 w-12 text-white" />
-              </div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-3">
-                🎉 Tạo Đơn Hàng Thành Công!
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                Tạo Đơn Hàng Thành Công!
               </h3>
               <p className="text-gray-600 mb-6">
                 Đơn hàng với {flowState.cartItems.length} sản phẩm đã được tạo
