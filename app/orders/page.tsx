@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Package, ShoppingCart } from "lucide-react";
 import AdminLayout from "@/components/admin-layout";
-import { OrderTable } from "@/components/orders/order-table";
+import { OrderTabs } from "@/components/orders/order-tabs";
+import { OrderOverview } from "@/components/orders/order-overview";
 import { OrderDialog } from "@/components/orders/order-dialog";
 import { OrderDetailTable } from "@/components/orders/order-detail-table";
 import {
@@ -109,16 +110,21 @@ export default function OrdersPage() {
           </div>
         </div>
 
+        {/* Order Overview Cards */}
+        <OrderOverview orders={orders} />
+
         {/* Orders Management */}
         <Card>
           <CardHeader>
             <div>
               <CardTitle>Danh Sách Đơn Hàng</CardTitle>
-              <CardDescription>Tất cả đơn hàng trong hệ thống</CardDescription>
+              <CardDescription>
+                Quản lý đơn hàng theo trạng thái
+              </CardDescription>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <OrderTable
+            <OrderTabs
               orders={orders}
               onEdit={handleEditOrder}
               onDelete={handleDeleteOrder}
