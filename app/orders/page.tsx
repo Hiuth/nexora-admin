@@ -118,15 +118,6 @@ export default function OrdersPage() {
     return false;
   };
 
-  const handleCheckStock = async (orderId: string) => {
-    try {
-      const response = await orderService.checkStockAvailability(orderId);
-      return response.result || { canConfirm: false, insufficientItems: [] };
-    } catch (error) {
-      return { canConfirm: false, insufficientItems: [] };
-    }
-  };
-
   const handleOrderUpdated = async () => {
     if (selectedOrder) {
       await loadOrderDetails(selectedOrder.id);
@@ -205,7 +196,6 @@ export default function OrdersPage() {
           onOpenChange={setOrderDialogOpen}
           order={editingOrder}
           onUpdate={handleUpdateOrder}
-          onCheckStock={handleCheckStock}
           loading={updating}
         />
 

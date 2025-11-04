@@ -43,24 +43,60 @@ export function ProductUnitTable({
   onRefresh,
   onDelete,
 }: ProductUnitTableProps) {
-  const canAddMoreUnits = productUnits.length < stockQuantity;
+  // For serial products, we can always add more units (stockQuantity is just 0 placeholder)
+  // For non-serial products, we check against stockQuantity
+  const canAddMoreUnits = true; // Always allow adding units for serial products
   const [editingUnit, setEditingUnit] = useState<ProductUnitResponse | null>(
     null
   );
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "available":
-        return "bg-green-100 text-green-800";
-      case "sold":
-        return "bg-gray-100 text-gray-800";
-      case "reserved":
-        return "bg-yellow-100 text-yellow-800";
-      case "damaged":
-        return "bg-red-100 text-red-800";
+    switch (status.toUpperCase()) {
+      case "AVAILABLE":
+      case "CÓ SẴN":
+        return "bg-green-500 text-white";
+      case "SOLD":
+      case "ĐÃ BÁN":
+        return "bg-red-500 text-white";
+      case "WARRANTY":
+      case "ĐANG BẢO HÀNH":
+        return "bg-blue-500 text-white";
+      case "RESERVED":
+      case "ĐÃ ĐẶT":
+        return "bg-yellow-500 text-white";
+      case "DAMAGED":
+      case "HỎNG":
+        return "bg-gray-500 text-white";
       default:
-        return "bg-blue-100 text-blue-800";
+        return "bg-gray-500 text-white";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status.toUpperCase()) {
+      case "AVAILABLE":
+        return "Có sẵn";
+      case "CÓ SẴN":
+        return "Có sẵn";
+      case "SOLD":
+        return "Đã bán";
+      case "ĐÃ BÁN":
+        return "Đã bán";
+      case "WARRANTY":
+        return "Đang bảo hành";
+      case "ĐANG BẢO HÀNH":
+        return "Đang bảo hành";
+      case "RESERVED":
+        return "Đã đặt";
+      case "ĐÃ ĐẶT":
+        return "Đã đặt";
+      case "DAMAGED":
+        return "Hỏng";
+      case "HỎNG":
+        return "Hỏng";
+      default:
+        return status;
     }
   };
 
@@ -114,17 +150,13 @@ export function ProductUnitTable({
             Đơn Vị Sản Phẩm: {productName}
           </h3>
           <p className="text-sm text-muted-foreground">
-            Quản lý từng đơn vị cụ thể của sản phẩm này ({productUnits.length}/
-            {stockQuantity} đơn vị)
+            Quản lý từng đơn vị cụ thể của sản phẩm này (Đã có{" "}
+            {productUnits.length} đơn vị)
           </p>
         </div>
-        <Button
-          onClick={() => setShowCreateDialog(true)}
-          disabled={!canAddMoreUnits}
-        >
+        <Button onClick={() => setShowCreateDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Thêm Đơn Vị
-          {!canAddMoreUnits && " (Đã Đủ)"}
         </Button>
       </div>
 
@@ -158,7 +190,7 @@ export function ProductUnitTable({
                   <TableCell>{unit.imei || "N/A"}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(unit.status)}>
-                      {getStatusLabel(unit.status)}
+                      {getStatusText(unit.status)}
                     </Badge>
                   </TableCell>
                   <TableCell>{formatDate(unit.createdAt)}</TableCell>

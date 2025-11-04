@@ -96,7 +96,10 @@ export function OrderDetailList({
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Tổng:</span>
                     <span className="font-semibold text-blue-600">
-                      {detail.price.toLocaleString("vi-VN")}₫
+                      {(detail.quantity * detail.unitPrice).toLocaleString(
+                        "vi-VN"
+                      )}
+                      ₫
                     </span>
                   </div>
                 </div>

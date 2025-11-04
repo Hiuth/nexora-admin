@@ -82,9 +82,15 @@ export const getStatusColor = (status: string): string => {
     EXPIRED: "text-red-600 bg-red-100",
     CLAIMED: "text-orange-600 bg-orange-100",
     DRAFT: "text-gray-600 bg-gray-100",
+    // Product Unit statuses
+    AVAILABLE: "bg-green-500 text-white",
+    SOLD: "bg-red-500 text-white",
+    WARRANTY: "bg-blue-500 text-white",
+    RESERVED: "bg-yellow-500 text-white",
+    DAMAGED: "bg-gray-500 text-white",
   };
 
-  return statusColors[status] || "text-gray-600 bg-gray-100";
+  return statusColors[status.toUpperCase()] || "text-gray-600 bg-gray-100";
 };
 
 export const getStatusText = (status: string): string => {
@@ -101,9 +107,15 @@ export const getStatusText = (status: string): string => {
     EXPIRED: "Đã hết hạn",
     CLAIMED: "Đã sử dụng",
     DRAFT: "Bản nháp",
+    // Product Unit statuses
+    AVAILABLE: "Có sẵn",
+    SOLD: "Đã bán",
+    WARRANTY: "Đang bảo hành",
+    RESERVED: "Đã đặt",
+    DAMAGED: "Hỏng",
   };
 
-  return statusTexts[status] || status;
+  return statusTexts[status.toUpperCase()] || status;
 };
 
 export const transformApiData = <T>(data: T[]): T[] => {

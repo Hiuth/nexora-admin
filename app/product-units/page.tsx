@@ -26,7 +26,7 @@ export default function ProductUnitsPage() {
         <div>
           <h1 className="text-2xl font-bold">Quản Lý Đơn Vị Sản Phẩm</h1>
           <p className="text-muted-foreground">
-            Chọn sản phẩm và quản lý từng đơn vị cụ thể
+            Chọn sản phẩm có serial và quản lý từng đơn vị cụ thể
           </p>
         </div>
 
@@ -58,8 +58,8 @@ export default function ProductUnitsPage() {
             <CardContent className="p-6">
               <div className="text-center text-muted-foreground">
                 <p>
-                  Vui lòng chọn sản phẩm từ dropdown ở trên để quản lý các đơn
-                  vị của nó.
+                  Vui lòng chọn sản phẩm có serial từ dropdown ở trên để quản lý
+                  các đơn vị của nó.
                 </p>
               </div>
             </CardContent>

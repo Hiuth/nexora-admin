@@ -104,7 +104,7 @@ export function CreateOrderForm({
 
     const orderData: CreateOrderRequest = {
       ...formData,
-      totalAmount,
+      totalAmount: 0, // Let backend calculate from order details
     };
 
     const success = await onCreateOrder(orderData);

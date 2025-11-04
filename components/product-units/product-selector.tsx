@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -9,12 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  CategoryResponse,
-  SubCategoryResponse,
-  ProductResponse,
-} from "@/types";
-import { useCategories, useSubCategories, useProducts } from "@/hooks";
+import { Search } from "lucide-react";
+import { CategoryResponse, ProductResponse } from "@/types";
+import { useCategories, useProducts } from "@/hooks";
 
 interface ProductSelectorProps {
   onProductSelect: (product: ProductResponse) => void;
@@ -25,27 +23,24 @@ export function ProductSelector({
   onProductSelect,
   selectedProduct,
 }: ProductSelectorProps) {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-  const [selectedSubCategoryId, setSelectedSubCategoryId] =
-    useState<string>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const { categories, loading: categoriesLoading } = useCategories();
-  const {
-    subCategories,
-    fetchSubCategories,
-    loading: subCategoriesLoading,
-  } = useSubCategories();
   const { products, fetchProducts, loading: productsLoading } = useProducts();
+
+  // Load all products on component mount
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleCategoryChange = async (categoryId: string) => {
     setSelectedCategoryId(categoryId);
-    setSelectedSubCategoryId("");
-    await fetchSubCategories(categoryId);
-  };
+    // Reset search when category changes
+    setSearchTerm("");
 
-  const handleSubCategoryChange = async (subCategoryId: string) => {
-    setSelectedSubCategoryId(subCategoryId);
-    await fetchProducts(undefined, subCategoryId);
+    // Always load all products, filtering will be done client-side
+    await fetchProducts();
   };
 
   const handleProductChange = (productId: string) => {
@@ -56,6 +51,29 @@ export function ProductSelector({
       onProductSelect(product);
     }
   };
+
+  // Filter products based on search term and category
+  const filteredProducts = useMemo(() => {
+    if (!Array.isArray(products)) return [];
+
+    return products.filter((product: ProductResponse) => {
+      // Only show products with serial numbers
+      const hasSerial = product.isSerial === true;
+
+      // Filter by search term
+      const matchesSearch =
+        searchTerm === "" ||
+        product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brandName?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Filter by category (if not "all")
+      const matchesCategory =
+        selectedCategoryId === "all" ||
+        product.categoryId === selectedCategoryId;
+
+      return hasSerial && matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, selectedCategoryId]);
 
   return (
     <Card>
@@ -79,6 +97,7 @@ export function ProductSelector({
               />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">Tất cả danh mục</SelectItem>
               {Array.isArray(categories) && categories.length > 0
                 ? categories.map((category: CategoryResponse) => (
                     <SelectItem key={category.id} value={category.id}>
@@ -94,78 +113,62 @@ export function ProductSelector({
           </Select>
         </div>
 
-        {/* Subcategory Selection */}
-        {selectedCategoryId && (
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Danh Mục Con
-            </label>
-            <Select
-              onValueChange={handleSubCategoryChange}
-              value={selectedSubCategoryId}
-              disabled={subCategoriesLoading}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    subCategoriesLoading ? "Đang tải..." : "Chọn danh mục con"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.isArray(subCategories) && subCategories.length > 0
-                  ? subCategories.map((subCategory: SubCategoryResponse) => (
-                      <SelectItem key={subCategory.id} value={subCategory.id}>
-                        {subCategory.subCategoryName}
-                      </SelectItem>
-                    ))
-                  : !subCategoriesLoading && (
-                      <div className="p-2 text-sm text-muted-foreground">
-                        Không có danh mục con nào
-                      </div>
-                    )}
-              </SelectContent>
-            </Select>
+        {/* Search Products */}
+        <div>
+          <label className="text-sm font-medium mb-2 block">
+            Tìm kiếm sản phẩm có serial
+          </label>
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Tìm theo tên sản phẩm hoặc thương hiệu..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
           </div>
-        )}
+          <p className="text-xs text-muted-foreground mt-1">
+            Chỉ hiển thị sản phẩm có quản lý serial/IMEI
+          </p>
+        </div>
 
         {/* Product Selection */}
-        {selectedSubCategoryId && (
-          <div>
-            <label className="text-sm font-medium mb-2 block">Sản Phẩm</label>
-            <Select
-              onValueChange={handleProductChange}
-              value={selectedProduct?.id || ""}
-              disabled={productsLoading}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    productsLoading ? "Đang tải..." : "Chọn sản phẩm"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.isArray(products) && products.length > 0
-                  ? products.map((product: ProductResponse) => (
-                      <SelectItem key={product.id} value={product.id}>
-                        <div className="flex justify-between items-center w-full">
-                          <span>{product.productName}</span>
-                          <span className="text-xs text-muted-foreground ml-2">
-                            Tồn kho: {product.stockQuantity}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))
-                  : !productsLoading && (
-                      <div className="p-2 text-sm text-muted-foreground">
-                        Không có sản phẩm nào
+        <div>
+          <label className="text-sm font-medium mb-2 block">
+            Sản phẩm có serial ({filteredProducts.length} sản phẩm)
+          </label>
+          <Select
+            onValueChange={handleProductChange}
+            value={selectedProduct?.id || ""}
+            disabled={productsLoading}
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={productsLoading ? "Đang tải..." : "Chọn sản phẩm"}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {filteredProducts.length > 0
+                ? filteredProducts.map((product: ProductResponse) => (
+                    <SelectItem key={product.id} value={product.id}>
+                      <div className="flex justify-between items-center w-full">
+                        <span>{product.productName}</span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          Tồn kho: {product.stockQuantity}
+                        </span>
                       </div>
-                    )}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+                    </SelectItem>
+                  ))
+                : !productsLoading && (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      {searchTerm || selectedCategoryId !== "all"
+                        ? "Không tìm thấy sản phẩm có serial nào"
+                        : "Không có sản phẩm có serial nào"}
+                    </div>
+                  )}
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Selected Product Info */}
         {selectedProduct && (

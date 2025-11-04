@@ -37,11 +37,11 @@ export function ProductUnitList({
     selectedOrderDetail?.productId
   );
 
-  // Filter only available product units
-  const availableProductUnits = productUnits.filter(
+  // Filter only sold product units (for warranty)
+  const soldProductUnits = productUnits.filter(
     (unit) =>
-      unit.status.toUpperCase() === "AVAILABLE" ||
-      unit.status.toUpperCase() === "CÓ SẴN"
+      unit.status.toUpperCase() === "SOLD" ||
+      unit.status.toUpperCase() === "ĐÃ BÁN"
   );
 
   const getStatusColor = (status: string) => {
@@ -52,9 +52,9 @@ export function ProductUnitList({
       case "SOLD":
       case "ĐÃ BÁN":
         return "bg-red-500";
-      case "RESERVED":
-      case "ĐÃ ĐẶT":
-        return "bg-orange-500";
+      case "WARRANTY":
+      case "ĐANG BẢO HÀNH":
+        return "bg-blue-500";
       default:
         return "bg-gray-500";
     }
@@ -70,10 +70,16 @@ export function ProductUnitList({
         return "Đã bán";
       case "ĐÃ BÁN":
         return "Đã bán";
+      case "WARRANTY":
+        return "Đang bảo hành";
+      case "ĐANG BẢO HÀNH":
+        return "Đang bảo hành";
       case "RESERVED":
         return "Đã đặt";
       case "ĐÃ ĐẶT":
         return "Đã đặt";
+      case "DAMAGED":
+        return "Hỏng";
       default:
         return status;
     }
@@ -129,14 +135,14 @@ export function ProductUnitList({
             </Card>
           ))}
         </div>
-      ) : availableProductUnits.length === 0 ? (
+      ) : soldProductUnits.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8 space-y-2">
               <AlertCircle className="h-12 w-12 text-orange-500 mx-auto" />
-              <h4 className="font-medium">Không có đơn vị khả dụng</h4>
+              <h4 className="font-medium">Không có sản phẩm đã bán</h4>
               <p className="text-muted-foreground text-sm">
-                Sản phẩm này hiện không có đơn vị nào có sẵn để tạo bảo hành
+                Sản phẩm này hiện không có đơn vị nào đã bán để tạo bảo hành
               </p>
             </div>
           </CardContent>
@@ -144,7 +150,7 @@ export function ProductUnitList({
       ) : (
         <>
           <div className="space-y-2">
-            {availableProductUnits.map((unit) => (
+            {soldProductUnits.map((unit) => (
               <Card
                 key={unit.id}
                 className={`cursor-pointer transition-all hover:shadow-md ${

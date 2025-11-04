@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OrderResponse, CreateOrderRequest, UpdateOrderRequest } from "@/types";
-import { Loader2, Package, AlertTriangle } from "lucide-react";
+import { Loader2, Package } from "lucide-react";
 
 interface OrderDialogProps {
   isOpen: boolean;
@@ -29,9 +29,6 @@ interface OrderDialogProps {
   order?: OrderResponse | null;
   onSubmit?: (data: CreateOrderRequest) => Promise<boolean>;
   onUpdate: (orderId: string, data: UpdateOrderRequest) => Promise<boolean>;
-  onCheckStock?: (
-    orderId: string
-  ) => Promise<{ canConfirm: boolean; insufficientItems: any[] }>;
   loading?: boolean;
 }
 
@@ -50,7 +47,6 @@ export function OrderDialog({
   order,
   onSubmit,
   onUpdate,
-  onCheckStock,
   loading = false,
 }: OrderDialogProps) {
   const [formData, setFormData] = useState({
@@ -61,11 +57,6 @@ export function OrderDialog({
     address: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [stockCheckResult, setStockCheckResult] = useState<{
-    canConfirm: boolean;
-    insufficientItems: any[];
-  } | null>(null);
-  const [checkingStock, setCheckingStock] = useState(false);
 
   useEffect(() => {
     if (order) {
@@ -86,42 +77,11 @@ export function OrderDialog({
       });
     }
     setErrors({});
-    setStockCheckResult(null);
   }, [order, isOpen]);
 
-  // Check stock when trying to change status to CONFIRMED
+  // Handle status change - simplified without stock check
   const handleStatusChange = async (newStatus: string) => {
     setFormData({ ...formData, status: newStatus });
-
-    if (newStatus === "CONFIRMED" && order && onCheckStock) {
-      setCheckingStock(true);
-      try {
-        const result = await onCheckStock(order.id);
-        setStockCheckResult(result);
-        if (!result.canConfirm) {
-          setErrors({
-            ...errors,
-            status: "Không thể xác nhận đơn hàng do không đủ hàng trong kho",
-          });
-        } else {
-          const newErrors = { ...errors };
-          delete newErrors.status;
-          setErrors(newErrors);
-        }
-      } catch (error) {
-        setErrors({
-          ...errors,
-          status: "Lỗi khi kiểm tra tồn kho",
-        });
-      } finally {
-        setCheckingStock(false);
-      }
-    } else {
-      setStockCheckResult(null);
-      const newErrors = { ...errors };
-      delete newErrors.status;
-      setErrors(newErrors);
-    }
   };
 
   // Filter available statuses based on current status
@@ -215,19 +175,6 @@ export function OrderDialog({
       return;
     }
 
-    // Additional validation for stock when confirming
-    if (
-      formData.status === "CONFIRMED" &&
-      stockCheckResult &&
-      !stockCheckResult.canConfirm
-    ) {
-      setErrors({
-        ...errors,
-        status: "Không thể xác nhận đơn hàng do không đủ hàng trong kho",
-      });
-      return;
-    }
-
     let success = false;
     if (order) {
       success = await onUpdate(order.id, formData);
@@ -244,7 +191,6 @@ export function OrderDialog({
         address: "",
       });
       setErrors({});
-      setStockCheckResult(null);
       onOpenChange(false);
     }
   };
@@ -332,7 +278,7 @@ export function OrderDialog({
                 }
                 placeholder="Tổng tiền sẽ được tính tự động"
                 min="0"
-                step="1000"
+                step="any"
                 disabled={loading || !canEditField("totalAmount")} // Chỉ đọc khi tạo đơn hàng mới
                 readOnly={!canEditField("totalAmount")} // Chỉ đọc khi tạo đơn hàng mới
                 className={!canEditField("totalAmount") ? "bg-muted" : ""}
@@ -357,7 +303,7 @@ export function OrderDialog({
               <Select
                 value={formData.status}
                 onValueChange={handleStatusChange}
-                disabled={loading || checkingStock}
+                disabled={loading}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn trạng thái" />
@@ -370,28 +316,6 @@ export function OrderDialog({
                   ))}
                 </SelectContent>
               </Select>
-              {checkingStock && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang kiểm tra tồn kho...
-                </div>
-              )}
-              {stockCheckResult && !stockCheckResult.canConfirm && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-red-600">
-                    <AlertTriangle className="h-4 w-4" />
-                    Không đủ hàng trong kho
-                  </div>
-                  {stockCheckResult.insufficientItems.length > 0 && (
-                    <div className="text-xs text-muted-foreground">
-                      Sản phẩm thiếu:{" "}
-                      {stockCheckResult.insufficientItems
-                        .map((item) => item.productName)
-                        .join(", ")}
-                    </div>
-                  )}
-                </div>
-              )}
               {errors.status && (
                 <p className="text-sm text-destructive">{errors.status}</p>
               )}

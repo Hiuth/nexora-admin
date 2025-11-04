@@ -97,7 +97,14 @@ export function ProductFormFields({
             placeholder="0"
             required
             min="0"
+            disabled={formData.isSerial}
           />
+          {formData.isSerial && (
+            <p className="text-xs text-muted-foreground">
+              Sản phẩm có serial sẽ có số lượng = 0. Số lượng thực tế được quản
+              lý thông qua các đơn vị sản phẩm.
+            </p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="warrantyPeriod">Thời hạn bảo hành (tháng)</Label>

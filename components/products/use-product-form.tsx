@@ -143,7 +143,16 @@ export function useProductForm({
   };
 
   const handleFormDataChange = (newData: Partial<ProductFormData>) => {
-    setFormData((prev) => ({ ...prev, ...newData }));
+    setFormData((prev) => {
+      const updatedData = { ...prev, ...newData };
+
+      // If isSerial is being set to true, reset stockQuantity to 0
+      if (newData.isSerial === true) {
+        updatedData.stockQuantity = 0;
+      }
+
+      return updatedData;
+    });
   };
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {

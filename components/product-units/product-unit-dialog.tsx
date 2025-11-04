@@ -48,10 +48,11 @@ interface ProductUnitDialogProps {
 }
 
 const statusOptions = [
-  { value: "available", label: "Có Sẵn" },
-  { value: "sold", label: "Đã Bán" },
-  { value: "reserved", label: "Đã Đặt" },
-  { value: "damaged", label: "Hỏng" },
+  { value: "AVAILABLE", label: "Có Sẵn" },
+  { value: "SOLD", label: "Đã Bán" },
+  { value: "WARRANTY", label: "Đang Bảo Hành" },
+  { value: "RESERVED", label: "Đã Đặt" },
+  { value: "DAMAGED", label: "Hỏng" },
 ];
 
 export function ProductUnitDialog({
@@ -66,27 +67,19 @@ export function ProductUnitDialog({
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const isEditing = !!productUnit;
-  const canCreate = !isEditing && currentUnitsCount < stockQuantity;
+  // For serial products, always allow creating units (no stockQuantity limit)
+  const canCreate = true;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       serialNumber: productUnit?.serialNumber || "",
       imei: productUnit?.imei || "",
-      status: productUnit?.status || "available",
+      status: productUnit?.status || "AVAILABLE",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!isEditing && !canCreate) {
-      toast({
-        variant: "destructive",
-        title: "Không Thể Tạo Đơn Vị",
-        description: `Không thể tạo thêm đơn vị. Hiện tại: ${currentUnitsCount}, Giới hạn: ${stockQuantity}`,
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
       if (isEditing) {
@@ -152,12 +145,7 @@ export function ProductUnitDialog({
           </DialogTitle>
           {!isEditing && (
             <p className="text-sm text-muted-foreground">
-              Đơn vị hiện tại: {currentUnitsCount}/{stockQuantity}
-              {!canCreate && (
-                <span className="text-red-500 ml-2">
-                  ⚠️ Đã đạt giới hạn tồn kho
-                </span>
-              )}
+              Đã có {currentUnitsCount} đơn vị được tạo
             </p>
           )}
         </DialogHeader>
@@ -224,10 +212,7 @@ export function ProductUnitDialog({
               >
                 Hủy
               </Button>
-              <Button
-                type="submit"
-                disabled={isLoading || (!isEditing && !canCreate)}
-              >
+              <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Đang lưu..." : isEditing ? "Cập nhật" : "Tạo mới"}
               </Button>
             </div>
