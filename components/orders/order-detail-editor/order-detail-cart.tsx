@@ -46,7 +46,7 @@ export function OrderDetailCart({
                         {detail.quantity} × {formatCurrency(detail.unitPrice)}
                       </div>
                       <div className="text-xs font-semibold text-blue-600">
-                        {formatCurrency(detail.price)}
+                        {formatCurrency(detail.quantity * detail.unitPrice)}
                       </div>
                     </div>
                     <Button

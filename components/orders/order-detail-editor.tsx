@@ -242,7 +242,7 @@ export function OrderDetailEditor({
   };
 
   const totalAmount = orderDetails.reduce(
-    (sum, detail) => sum + detail.price,
+    (sum, detail) => sum + detail.quantity * detail.unitPrice,
     0
   );
 
