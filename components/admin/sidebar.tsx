@@ -69,11 +69,6 @@ const menuItems = [
     icon: ShoppingCart,
   },
   {
-    label: "Chuẩn bị đơn hàng",
-    href: "/order-preparation",
-    icon: ShoppingCart,
-  },
-  {
     label: "Tạo đơn hàng",
     href: "/create-orders",
     icon: ShoppingCart,

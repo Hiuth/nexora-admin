@@ -17,7 +17,6 @@ import {
   PackageOpen,
   Monitor,
   Plus,
-  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -110,11 +109,6 @@ const menuGroups = [
         label: "Tạo Đơn Hàng",
         href: "/create-orders",
         icon: Plus,
-      },
-      {
-        label: "Chuẩn Bị Đơn Hàng",
-        href: "/orders/preparation",
-        icon: ClipboardList,
       },
     ],
   },

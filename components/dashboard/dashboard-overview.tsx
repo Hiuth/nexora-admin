@@ -280,10 +280,6 @@ export function DashboardOverview() {
               <ShoppingCart className="w-8 h-8 text-green-600 mb-2" />
               <span className="text-sm font-medium">Tạo đơn hàng</span>
             </div>
-            <div className="flex flex-col items-center p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-              <Shield className="w-8 h-8 text-orange-600 mb-2" />
-              <span className="text-sm font-medium">Chuẩn bị đơn hàng</span>
-            </div>
           </div>
         </CardContent>
       </Card>
