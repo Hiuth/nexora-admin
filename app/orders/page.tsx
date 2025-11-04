@@ -25,7 +25,6 @@ import {
 import { useOrders } from "@/hooks/use-orders";
 import { useOrderDetails } from "@/hooks/use-order-details";
 import { OrderResponse, UpdateOrderRequest } from "@/types";
-import { orderService } from "@/lib/api/order";
 import { toast } from "sonner";
 
 const getStatusText = (status: string) => {
@@ -95,19 +94,10 @@ export default function OrdersPage() {
   const handleConfirmOrder = async (order: OrderResponse) => {
     setConfirming(order.id);
     try {
-      // Check stock first
-      const stockCheck = await orderService.checkStockAvailability(order.id);
-      if (!stockCheck.result?.canConfirm) {
-        toast.error("Không thể xác nhận đơn hàng do không đủ hàng trong kho");
-        return false;
-      }
-
-      // Confirm order
-      const response = await orderService.confirmOrder(order.id);
-      if (response.result) {
+      // Simply update order status to CONFIRMED
+      const success = await updateOrder(order.id, { status: "CONFIRMED" });
+      if (success) {
         toast.success("Xác nhận đơn hàng thành công");
-        // Refresh orders list without reloading the page
-        await loadAllOrders();
         return true;
       }
     } catch (error) {
