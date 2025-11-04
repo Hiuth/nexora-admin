@@ -102,7 +102,8 @@ export function OrderDialog({
       newErrors.status = "Trạng thái là bắt buộc";
     }
 
-    if (formData.totalAmount <= 0) {
+    // Chỉ validate tổng tiền khi chỉnh sửa đơn hàng (không phải tạo mới)
+    if (order && formData.totalAmount <= 0) {
       newErrors.totalAmount = "Tổng tiền phải lớn hơn 0";
     }
 
@@ -203,7 +204,9 @@ export function OrderDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="totalAmount">Tổng tiền *</Label>
+              <Label htmlFor="totalAmount">
+                Tổng tiền {!order ? "(Tự động)" : "*"}
+              </Label>
               <Input
                 id="totalAmount"
                 type="number"
@@ -214,13 +217,20 @@ export function OrderDialog({
                     totalAmount: Number(e.target.value),
                   })
                 }
-                placeholder="Nhập tổng tiền"
+                placeholder="Tổng tiền sẽ được tính tự động"
                 min="0"
                 step="1000"
-                disabled={loading}
+                disabled={loading || !order} // Chỉ đọc khi tạo đơn hàng mới
+                readOnly={!order} // Chỉ đọc khi tạo đơn hàng mới
+                className={!order ? "bg-muted" : ""}
               />
               {errors.totalAmount && (
                 <p className="text-sm text-destructive">{errors.totalAmount}</p>
+              )}
+              {!order && (
+                <p className="text-xs text-muted-foreground">
+                  Tổng tiền sẽ được tính tự động khi thêm sản phẩm
+                </p>
               )}
             </div>
 

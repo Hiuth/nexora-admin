@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { orderService } from "@/lib/api/orders";
+import { orderService } from "@/lib/api";
 import { OrderResponse, CreateOrderRequest, UpdateOrderRequest } from "@/types";
 import { toast } from "@/hooks/use-toast";
 
