@@ -1,57 +1,74 @@
-import {
-  ApiResponse,
-  WarrantyRecordResponse,
-  CreateWarrantyRequest,
-  UpdateWarrantyRequest,
-} from "@/types";
+import { ApiResponse, WarrantyRecordResponse } from "@/types";
 import { apiCall } from "./base";
+import { API_CONFIG } from "../api-config";
 
-export const warrantyService = {
+export const warrantyRecordService = {
   create: async (
     productId: string,
     orderId: string,
-    productUnitId: string,
-    data: CreateWarrantyRequest
-  ): Promise<ApiResponse<WarrantyRecordResponse>> =>
-    apiCall(`/Warranty/create/${productId}/${orderId}/${productUnitId}`, {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
+    productUnitId: string
+  ): Promise<ApiResponse<WarrantyRecordResponse>> => {
+    const formData = new FormData();
+    return apiCall(
+      `${API_CONFIG.ENDPOINTS.WARRANTY_RECORD.CREATE}/${productId}/${orderId}/${productUnitId}`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+  },
 
   update: async (
-    id: string,
-    data: UpdateWarrantyRequest
-  ): Promise<ApiResponse<WarrantyRecordResponse>> =>
-    apiCall(`/Warranty/update/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }),
+    warrantyPeriodId: string,
+    status: string
+  ): Promise<ApiResponse<WarrantyRecordResponse>> => {
+    const formData = new FormData();
+    formData.append("status", status);
+    return apiCall(
+      `${API_CONFIG.ENDPOINTS.WARRANTY_RECORD.UPDATE}/${warrantyPeriodId}`,
+      {
+        method: "PUT",
+        body: formData,
+      }
+    );
+  },
 
   getByProductId: async (
     productId: string
   ): Promise<ApiResponse<WarrantyRecordResponse[]>> =>
-    apiCall(`/Warranty/getByProductId/${productId}`),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.WARRANTY_RECORD.GET_BY_PRODUCT_ID}/${productId}`
+    ),
 
   getByOrderId: async (
     orderId: string
   ): Promise<ApiResponse<WarrantyRecordResponse[]>> =>
-    apiCall(`/Warranty/getByOrderId/${orderId}`),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.WARRANTY_RECORD.GET_BY_ORDER_ID}/${orderId}`
+    ),
 
   getByStatus: async (
     status: string
   ): Promise<ApiResponse<WarrantyRecordResponse[]>> =>
-    apiCall(`/Warranty/getByStatus/${status}`),
+    apiCall(`${API_CONFIG.ENDPOINTS.WARRANTY_RECORD.GET_BY_STATUS}/${status}`),
 
   getBySerialNumber: async (
     serialNumber: string
   ): Promise<ApiResponse<WarrantyRecordResponse>> =>
-    apiCall(`/Warranty/getBySerialNumber/${serialNumber}`),
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.WARRANTY_RECORD.GET_BY_SERIAL_NUMBER}/${serialNumber}`
+    ),
 
   getByImei: async (
     imei: string
   ): Promise<ApiResponse<WarrantyRecordResponse>> =>
-    apiCall(`/Warranty/getByImei/${imei}`),
+    apiCall(`${API_CONFIG.ENDPOINTS.WARRANTY_RECORD.GET_BY_IMEI}/${imei}`),
 
-  delete: async (id: string): Promise<ApiResponse<string>> =>
-    apiCall(`/Warranty/delete/${id}`, { method: "DELETE" }),
+  delete: async (warrantyPeriodId: string): Promise<ApiResponse<string>> =>
+    apiCall(
+      `${API_CONFIG.ENDPOINTS.WARRANTY_RECORD.DELETE}/${warrantyPeriodId}`,
+      {
+        method: "DELETE",
+      }
+    ),
 };

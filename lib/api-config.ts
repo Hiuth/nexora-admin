@@ -82,12 +82,15 @@ export const API_CONFIG = {
       DELETE: "/PcBuildItem/delete",
     },
 
-    WARRANTY: {
-      GET_ALL: "/Warranty/getAll",
-      GET_BY_ID: "/Warranty/getById",
-      CREATE: "/Warranty/create",
-      UPDATE: "/Warranty/update",
-      DELETE: "/Warranty/delete",
+    WARRANTY_RECORD: {
+      CREATE: "/WarrantyRecord/create",
+      UPDATE: "/WarrantyRecord/update",
+      DELETE: "/WarrantyRecord/delete",
+      GET_BY_PRODUCT_ID: "/WarrantyRecord/GetByProductId",
+      GET_BY_ORDER_ID: "/WarrantyRecord/GetByOrderId",
+      GET_BY_STATUS: "/WarrantyRecord/GetByStatus",
+      GET_BY_SERIAL_NUMBER: "/WarrantyRecord/GetBySerialNumber",
+      GET_BY_IMEI: "/WarrantyRecord/GetByImei",
     },
 
     ACCOUNT: {

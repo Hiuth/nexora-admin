@@ -17,23 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
-import {
-  WarrantyRecordResponse,
-  ProductResponse,
-  OrderResponse,
-  ProductUnitResponse,
-  DialogMode,
-  CreateWarrantyRequest,
-  UpdateWarrantyRequest,
-} from "@/types";
-import {
-  warrantyService,
-  productService,
-  orderService,
-  productUnitService,
-} from "@/lib/api";
-import { formatDate } from "@/lib/api-utils";
+import { WarrantyRecordResponse, DialogMode } from "@/types";
+import { warrantyRecordService } from "@/lib/api/warranty";
+import { useToast } from "@/hooks/use-toast";
 
 interface WarrantyDialogProps {
   open: boolean;
@@ -51,265 +37,184 @@ export function WarrantyDialog({
   onSubmit,
 }: WarrantyDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState<ProductResponse[]>([]);
-  const [orders, setOrders] = useState<OrderResponse[]>([]);
-  const [productUnits, setProductUnits] = useState<ProductUnitResponse[]>([]);
   const [formData, setFormData] = useState({
-    productId: "",
-    orderId: "",
-    productUnitId: "",
-    status: "ACTIVE",
+    status: "VALID",
   });
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (open) {
-      loadProducts();
-      loadOrders();
-      if (mode === "edit" && data) {
-        setFormData({
-          productId: data.productId,
-          orderId: data.orderId,
-          productUnitId: data.productUnitId,
-          status: data.status,
-        });
-        loadProductUnits(data.productId);
-      } else {
-        setFormData({
-          productId: "",
-          orderId: "",
-          productUnitId: "",
-          status: "ACTIVE",
-        });
-      }
+    if (open && data) {
+      setFormData({
+        status: data.status,
+      });
+    } else {
+      setFormData({
+        status: "VALID",
+      });
     }
-  }, [open, mode, data]);
-
-  const loadProducts = async () => {
-    try {
-      const response = await productService.getAll(1, 1000);
-      if (response.Code === 1000 && response.Result?.Items) {
-        setProducts(response.Result.Items);
-      }
-    } catch (error) {
-      toast.error("Không thể tải danh sách sản phẩm");
-    }
-  };
-
-  const loadOrders = async () => {
-    try {
-      const response = await orderService.getAll();
-      if (response.Code === 1000 && response.Result) {
-        setOrders(response.Result);
-      }
-    } catch (error) {
-      toast.error("Không thể tải danh sách đơn hàng");
-    }
-  };
-
-  const loadProductUnits = async (productId: string) => {
-    try {
-      const response = await productUnitService.getByProductId(productId);
-      if (response.Code === 1000 && response.Result) {
-        setProductUnits(response.Result);
-      }
-    } catch (error) {
-      toast.error("Không thể tải danh sách đơn vị sản phẩm");
-    }
-  };
-
-  const handleProductChange = (productId: string) => {
-    setFormData((prev) => ({ ...prev, productId, productUnitId: "" }));
-    loadProductUnits(productId);
-  };
+  }, [open, data]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (mode !== "edit" || !data) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Dialog chỉ hỗ trợ chỉnh sửa trạng thái bảo hành",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      if (mode === "create") {
-        const request: CreateWarrantyRequest = {
-          productId: formData.productId,
-          orderId: formData.orderId,
-          productUnitId: formData.productUnitId,
-          startDate: new Date(),
-          warrantyPeriod: 12, // Default 12 months
-        };
-        await warrantyService.create(
-          formData.productId,
-          formData.orderId,
-          formData.productUnitId,
-          request
-        );
-        toast.success("Tạo bảo hành thành công");
-      } else if (mode === "edit" && data) {
-        const request: UpdateWarrantyRequest = {
-          status: formData.status,
-        };
-        await warrantyService.update(data.id, request);
-        toast.success("Cập nhật bảo hành thành công");
-      }
+      await warrantyRecordService.update(data.id, formData.status);
+
+      toast({
+        title: "Thành công",
+        description: "Cập nhật bảo hành thành công",
+      });
+
       onSubmit();
       onClose();
     } catch (error) {
-      toast.error("Có lỗi xảy ra");
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Có lỗi xảy ra khi cập nhật bảo hành",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const isViewMode = mode === "view";
+  const getStatusText = (status: string) => {
+    switch (status.toUpperCase()) {
+      case "VALID":
+        return "Còn hiệu lực";
+      case "EXPIRED":
+        return "Hết hạn";
+      case "CLAIMED":
+        return "Đã sử dụng";
+      default:
+        return status;
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[1000px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {mode === "create" && "Tạo bảo hành mới"}
+          <DialogTitle className="text-xl font-semibold">
             {mode === "edit" && "Chỉnh sửa bảo hành"}
             {mode === "view" && "Chi tiết bảo hành"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === "create" && (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {data && (
             <>
-              <div className="space-y-2">
-                <Label htmlFor="productId">Sản phẩm</Label>
-                <Select
-                  value={formData.productId}
-                  onValueChange={handleProductChange}
-                  disabled={isViewMode}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn sản phẩm" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.map((product) => (
-                      <SelectItem key={product.id} value={product.id}>
-                        {product.productName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Sản phẩm</Label>
+                  <Input
+                    value={data.productName}
+                    disabled
+                    className="bg-gray-50 text-sm"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Mã đơn hàng</Label>
+                  <Input
+                    value={data.orderId}
+                    disabled
+                    className="bg-gray-50 text-sm"
+                  />
+                </div>
+              </div>
+
+              {(data.serialNumber || data.imei) && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    Số Serial / IMEI
+                  </Label>
+                  <Input
+                    value={data.serialNumber || data.imei || "Chưa có"}
+                    disabled
+                    className="bg-gray-50 text-sm"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Ngày bắt đầu</Label>
+                  <Input
+                    value={new Date(data.startDate).toLocaleDateString("vi-VN")}
+                    disabled
+                    className="bg-gray-50 text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Ngày kết thúc</Label>
+                  <Input
+                    value={new Date(data.endDate).toLocaleDateString("vi-VN")}
+                    disabled
+                    className="bg-gray-50 text-sm"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="orderId">Đơn hàng</Label>
-                <Select
-                  value={formData.orderId}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, orderId: value }))
-                  }
-                  disabled={isViewMode}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn đơn hàng" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {orders.map((order) => (
-                      <SelectItem key={order.id} value={order.id}>
-                        {order.id} - {order.CustomerName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="productUnitId">Đơn vị sản phẩm</Label>
-                <Select
-                  value={formData.productUnitId}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, productUnitId: value }))
-                  }
-                  disabled={isViewMode || !formData.productId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn đơn vị sản phẩm" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {productUnits.map((unit) => (
-                      <SelectItem key={unit.id} value={unit.id}>
-                        {unit.serialNumber || unit.imei || unit.id}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
-
-          {(mode === "edit" || mode === "view") && data && (
-            <>
-              <div className="space-y-2">
-                <Label>Sản phẩm</Label>
-                <Input value={data.productName} disabled />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Đơn hàng</Label>
-                <Input value={data.orderId} disabled />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Số Serial / IMEI</Label>
+                <Label className="text-sm font-medium">
+                  Thời gian bảo hành
+                </Label>
                 <Input
-                  value={data.serialNumber || data.imei || "Chưa có"}
+                  value={`${data.warrantyPeriod} tháng`}
                   disabled
+                  className="bg-gray-50 text-sm"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Ngày bắt đầu</Label>
-                  <Input value={formatDate(data.startDate)} disabled />
-                </div>
-                <div className="space-y-2">
-                  <Label>Ngày kết thúc</Label>
-                  <Input value={formatDate(data.endDate)} disabled />
-                </div>
-              </div>
-
               <div className="space-y-2">
-                <Label>Thời gian bảo hành (tháng)</Label>
-                <Input value={data.warrantyPeriod} disabled />
+                <Label htmlFor="status" className="text-sm font-medium">
+                  Trạng thái
+                </Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, status: value }))
+                  }
+                  disabled={isViewMode}
+                >
+                  <SelectTrigger className="h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="VALID">Còn hiệu lực</SelectItem>
+                    <SelectItem value="EXPIRED">Hết hạn</SelectItem>
+                    <SelectItem value="CLAIMED">Đã sử dụng</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="status">Trạng thái</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, status: value }))
-              }
-              disabled={isViewMode}
+          <div className="flex justify-end space-x-3 pt-6 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="px-6"
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ACTIVE">Còn hiệu lực</SelectItem>
-                <SelectItem value="EXPIRED">Đã hết hạn</SelectItem>
-                <SelectItem value="CLAIMED">Đã sử dụng</SelectItem>
-                <SelectItem value="CANCELLED">Đã hủy</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
               {isViewMode ? "Đóng" : "Hủy"}
             </Button>
             {!isViewMode && (
-              <Button type="submit" disabled={loading}>
-                {loading
-                  ? "Đang xử lý..."
-                  : mode === "create"
-                  ? "Tạo"
-                  : "Cập nhật"}
+              <Button type="submit" disabled={loading} className="px-6">
+                {loading ? "Đang xử lý..." : "Cập nhật"}
               </Button>
             )}
           </div>
