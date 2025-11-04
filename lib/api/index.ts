@@ -11,5 +11,5 @@ export { orderService } from "./order";
 export { orderDetailService } from "./order-details";
 export { pcBuildService } from "./pc-build";
 export { pcBuildItemService } from "./pc-build-item";
-export { warrantyService } from "./warranty";
+export { warrantyRecordService } from "./warranty";
 export { apiCall } from "./base";

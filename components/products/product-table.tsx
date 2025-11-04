@@ -59,6 +59,9 @@ export function ProductTable({
                 Tồn kho
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                Serial/IMEI
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
                 Trạng thái
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
@@ -103,6 +106,17 @@ export function ProductTable({
                   </td>
                   <td className="px-6 py-4">
                     <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        product.isSerial
+                          ? "bg-blue-500/20 text-blue-400"
+                          : "bg-gray-500/20 text-gray-400"
+                      }`}
+                    >
+                      {product.isSerial ? "Có" : "Không"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
                         product.status === "ACTIVE"
                           ? "bg-green-500/20 text-green-400"
@@ -137,7 +151,7 @@ export function ProductTable({
             ) : (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-6 py-8 text-center text-muted-foreground"
                 >
                   {Object.values(filters).some(

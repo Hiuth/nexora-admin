@@ -108,6 +108,7 @@ export interface ProductResponse {
   categoryId: string;
   categoryName: string;
   warrantyPeriod: number;
+  isSerial?: boolean;
 }
 
 export interface ProductAttributeResponse {

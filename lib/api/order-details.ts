@@ -31,6 +31,11 @@ export const orderDetailService = {
   ): Promise<ApiResponse<OrderDetailResponse[]>> =>
     apiCall(`${API_CONFIG.ENDPOINTS.ORDER_DETAIL.GET_BY_ORDER_ID}/${orderId}`),
 
+  delete: async (orderDetailId: string): Promise<ApiResponse<string>> =>
+    apiCall(`${API_CONFIG.ENDPOINTS.ORDER_DETAIL.DELETE}/${orderDetailId}`, {
+      method: "DELETE",
+    }),
+
   deleteByOrderId: async (orderId: string): Promise<ApiResponse<string>> =>
     apiCall(
       `${API_CONFIG.ENDPOINTS.ORDER_DETAIL.DELETE_BY_ORDER_ID}/${orderId}`,

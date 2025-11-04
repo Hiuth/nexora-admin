@@ -28,7 +28,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { OrderResponse } from "@/types";
-import { Edit, Trash2, MoreHorizontal, Eye, Loader2 } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  Eye,
+  Loader2,
+  Settings,
+} from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface OrderTableProps {
@@ -36,6 +43,7 @@ interface OrderTableProps {
   onEdit: (order: OrderResponse) => void;
   onDelete: (orderId: string) => Promise<boolean>;
   onViewDetails: (order: OrderResponse) => void;
+  onEditDetails?: (order: OrderResponse) => void;
   loading?: boolean;
   deleting?: string | null;
 }
@@ -83,6 +91,7 @@ export function OrderTable({
   onEdit,
   onDelete,
   onViewDetails,
+  onEditDetails,
   loading = false,
   deleting = null,
 }: OrderTableProps) {
@@ -104,6 +113,19 @@ export function OrderTable({
         setOrderToDelete(null);
       }
     }
+  };
+
+  // Helper functions to determine order capabilities
+  const canEdit = (order: OrderResponse) => {
+    return true; // Luôn cho phép chỉnh sửa thông tin (nhưng chỉ trạng thái với đơn hàng không phải pending)
+  };
+
+  const canDelete = (order: OrderResponse) => {
+    return order.status.toLowerCase() === "pending";
+  };
+
+  const canEditDetails = (order: OrderResponse) => {
+    return order.status.toLowerCase() === "pending";
   };
 
   if (loading) {
@@ -163,22 +185,33 @@ export function OrderTable({
                         <Eye className="mr-2 h-4 w-4" />
                         Xem chi tiết
                       </DropdownMenuItem>
+
+                      {canEditDetails(order) && onEditDetails && (
+                        <DropdownMenuItem onClick={() => onEditDetails(order)}>
+                          <Settings className="mr-2 h-4 w-4" />
+                          Chỉnh sửa chi tiết
+                        </DropdownMenuItem>
+                      )}
+
                       <DropdownMenuItem onClick={() => onEdit(order)}>
                         <Edit className="mr-2 h-4 w-4" />
-                        Chỉnh sửa
+                        Chỉnh sửa thông tin
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteClick(order)}
-                        className="text-red-600"
-                        disabled={deleting === order.id}
-                      >
-                        {deleting === order.id ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="mr-2 h-4 w-4" />
-                        )}
-                        Xóa
-                      </DropdownMenuItem>
+
+                      {canDelete(order) && (
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteClick(order)}
+                          className="text-red-600"
+                          disabled={deleting === order.id}
+                        >
+                          {deleting === order.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="mr-2 h-4 w-4" />
+                          )}
+                          Xóa
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Package2,
@@ -12,6 +13,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Search,
 } from "lucide-react";
 import { OrderDetailResponse, ProductUnitResponse } from "@/types";
 import { useProductUnits } from "@/hooks/use-product-units";

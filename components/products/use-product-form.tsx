@@ -49,6 +49,7 @@ export function useProductForm({
     brandId: "",
     categoryId: "",
     subCategoryId: "",
+    isSerial: false,
   });
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [additionalImages, setAdditionalImages] = useState<File[]>([]);
@@ -73,6 +74,7 @@ export function useProductForm({
           brandId: data.brandId,
           categoryId: data.categoryId,
           subCategoryId: data.subCategoryId,
+          isSerial: data.isSerial || false,
         });
       } else {
         setFormData({
@@ -85,6 +87,7 @@ export function useProductForm({
           brandId: "",
           categoryId: "",
           subCategoryId: "",
+          isSerial: false,
         });
       }
       setThumbnail(null);
@@ -221,6 +224,7 @@ export function useProductForm({
       warrantyPeriod: formData.warrantyPeriod,
       brandId: formData.brandId,
       subCategoryId: formData.subCategoryId,
+      isSerial: formData.isSerial,
     };
 
     const productResponse = await productService.create(
@@ -284,6 +288,10 @@ export function useProductForm({
     }
     if (formData.warrantyPeriod !== data.warrantyPeriod) {
       request.warrantyPeriod = formData.warrantyPeriod;
+      hasChanges = true;
+    }
+    if (formData.isSerial !== (data.isSerial || false)) {
+      request.isSerial = formData.isSerial;
       hasChanges = true;
     }
 

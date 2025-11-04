@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,7 @@ interface ProductFormData {
   brandId: string;
   categoryId: string;
   subCategoryId: string;
+  isSerial: boolean;
 }
 
 interface ProductFormFieldsProps {
@@ -184,20 +186,43 @@ export function ProductFormFields({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="status">Trạng thái</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value) => onFormDataChange({ status: value })}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ACTIVE">Đang hoạt động</SelectItem>
-            <SelectItem value="INACTIVE">Ngừng hoạt động</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="status">Trạng thái</Label>
+          <Select
+            value={formData.status}
+            onValueChange={(value) => onFormDataChange({ status: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ACTIVE">Đang hoạt động</SelectItem>
+              <SelectItem value="INACTIVE">Ngừng hoạt động</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Quản lý Serial/IMEI</Label>
+          <div className="flex items-center space-x-2 h-10">
+            <Checkbox
+              id="isSerial"
+              checked={formData.isSerial}
+              onCheckedChange={(checked) =>
+                onFormDataChange({ isSerial: checked as boolean })
+              }
+            />
+            <Label
+              htmlFor="isSerial"
+              className="text-sm font-medium leading-none"
+            >
+              Sản phẩm có số serial/IMEI
+            </Label>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Đánh dấu nếu sản phẩm này cần quản lý theo số serial hoặc IMEI
+          </p>
+        </div>
       </div>
 
       <div className="space-y-2">

@@ -78,6 +78,7 @@ export interface CreateProductRequest {
   brandId: string;
   subCategoryId: string;
   warrantyPeriod: number;
+  isSerial?: boolean;
 }
 
 export interface UpdateProductRequest {
@@ -90,6 +91,7 @@ export interface UpdateProductRequest {
   brandId?: string;
   subCategoryId?: string;
   warrantyPeriod?: number;
+  isSerial?: boolean;
 }
 
 // Product Attribute request types

@@ -118,6 +118,21 @@ export function ProductBasicInfo({ product }: ProductBasicInfoProps) {
         </div>
 
         <div className="flex justify-between items-center p-2 bg-muted/20 rounded-lg">
+          <span className="text-muted-foreground font-medium">
+            Serial/IMEI:
+          </span>
+          <Badge
+            className={`${
+              product.isSerial
+                ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                : "bg-gray-500/20 text-gray-400 border-gray-500/30"
+            }`}
+          >
+            {product.isSerial ? "Có quản lý" : "Không quản lý"}
+          </Badge>
+        </div>
+
+        <div className="flex justify-between items-center p-2 bg-muted/20 rounded-lg">
           <span className="text-muted-foreground font-medium">Ngày tạo:</span>
           <span className="font-semibold">{formatDate(product.createdAt)}</span>
         </div>

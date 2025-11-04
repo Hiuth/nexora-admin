@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OrderResponse, CreateOrderRequest, UpdateOrderRequest } from "@/types";
-import { Loader2, Package } from "lucide-react";
+import { Loader2, Package, AlertTriangle } from "lucide-react";
 
 interface OrderDialogProps {
   isOpen: boolean;
@@ -29,6 +29,9 @@ interface OrderDialogProps {
   order?: OrderResponse | null;
   onSubmit?: (data: CreateOrderRequest) => Promise<boolean>;
   onUpdate: (orderId: string, data: UpdateOrderRequest) => Promise<boolean>;
+  onCheckStock?: (
+    orderId: string
+  ) => Promise<{ canConfirm: boolean; insufficientItems: any[] }>;
   loading?: boolean;
 }
 
@@ -47,6 +50,7 @@ export function OrderDialog({
   order,
   onSubmit,
   onUpdate,
+  onCheckStock,
   loading = false,
 }: OrderDialogProps) {
   const [formData, setFormData] = useState({
@@ -57,6 +61,11 @@ export function OrderDialog({
     address: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [stockCheckResult, setStockCheckResult] = useState<{
+    canConfirm: boolean;
+    insufficientItems: any[];
+  } | null>(null);
+  const [checkingStock, setCheckingStock] = useState(false);
 
   useEffect(() => {
     if (order) {
@@ -77,7 +86,95 @@ export function OrderDialog({
       });
     }
     setErrors({});
+    setStockCheckResult(null);
   }, [order, isOpen]);
+
+  // Check stock when trying to change status to CONFIRMED
+  const handleStatusChange = async (newStatus: string) => {
+    setFormData({ ...formData, status: newStatus });
+
+    if (newStatus === "CONFIRMED" && order && onCheckStock) {
+      setCheckingStock(true);
+      try {
+        const result = await onCheckStock(order.id);
+        setStockCheckResult(result);
+        if (!result.canConfirm) {
+          setErrors({
+            ...errors,
+            status: "Không thể xác nhận đơn hàng do không đủ hàng trong kho",
+          });
+        } else {
+          const newErrors = { ...errors };
+          delete newErrors.status;
+          setErrors(newErrors);
+        }
+      } catch (error) {
+        setErrors({
+          ...errors,
+          status: "Lỗi khi kiểm tra tồn kho",
+        });
+      } finally {
+        setCheckingStock(false);
+      }
+    } else {
+      setStockCheckResult(null);
+      const newErrors = { ...errors };
+      delete newErrors.status;
+      setErrors(newErrors);
+    }
+  };
+
+  // Filter available statuses based on current status
+  const getAvailableStatuses = () => {
+    if (!order) return orderStatuses;
+
+    const currentStatus = order.status.toLowerCase();
+
+    switch (currentStatus) {
+      case "pending":
+        return orderStatuses.filter((s) =>
+          ["PENDING", "CONFIRMED", "CANCELLED"].includes(s.value)
+        );
+      case "confirmed":
+        return orderStatuses.filter((s) =>
+          ["CONFIRMED", "PROCESSING", "CANCELLED"].includes(s.value)
+        );
+      case "processing":
+        return orderStatuses.filter((s) =>
+          ["PROCESSING", "SHIPPED", "CANCELLED"].includes(s.value)
+        );
+      case "shipped":
+        return orderStatuses.filter((s) =>
+          ["SHIPPED", "DELIVERED"].includes(s.value)
+        );
+      case "delivered":
+      case "cancelled":
+        return orderStatuses.filter((s) => s.value === order.status);
+      default:
+        return orderStatuses;
+    }
+  };
+
+  const canEditField = (fieldName: string) => {
+    if (!order) return true; // Khi tạo mới, cho phép edit tất cả
+
+    // Khi chỉnh sửa đơn hàng hiện có
+    switch (fieldName) {
+      case "status":
+        return true; // Luôn cho phép chỉnh sửa trạng thái
+      case "customerName":
+      case "phoneNumber":
+      case "address":
+      case "totalAmount":
+        return order.status.toLowerCase() === "pending"; // Chỉ cho phép chỉnh sửa khi đơn hàng đang chờ xử lý
+      default:
+        return false;
+    }
+  };
+
+  const canEditOrder = () => {
+    return !order || order.status.toLowerCase() === "pending";
+  };
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -118,6 +215,19 @@ export function OrderDialog({
       return;
     }
 
+    // Additional validation for stock when confirming
+    if (
+      formData.status === "CONFIRMED" &&
+      stockCheckResult &&
+      !stockCheckResult.canConfirm
+    ) {
+      setErrors({
+        ...errors,
+        status: "Không thể xác nhận đơn hàng do không đủ hàng trong kho",
+      });
+      return;
+    }
+
     let success = false;
     if (order) {
       success = await onUpdate(order.id, formData);
@@ -134,6 +244,7 @@ export function OrderDialog({
         address: "",
       });
       setErrors({});
+      setStockCheckResult(null);
       onOpenChange(false);
     }
   };
@@ -160,7 +271,9 @@ export function OrderDialog({
           </DialogTitle>
           <DialogDescription>
             {order
-              ? "Cập nhật thông tin đơn hàng"
+              ? order.status.toLowerCase() === "pending"
+                ? "Cập nhật thông tin đơn hàng (có thể chỉnh sửa tất cả)"
+                : "Cập nhật trạng thái đơn hàng (chỉ có thể chỉnh sửa trạng thái)"
               : "Nhập thông tin để tạo đơn hàng mới"}
           </DialogDescription>
         </DialogHeader>
@@ -176,7 +289,7 @@ export function OrderDialog({
                   setFormData({ ...formData, customerName: e.target.value })
                 }
                 placeholder="Nhập tên khách hàng"
-                disabled={loading}
+                disabled={loading || !canEditField("customerName")}
               />
               {errors.customerName && (
                 <p className="text-sm text-destructive">
@@ -194,7 +307,7 @@ export function OrderDialog({
                   setFormData({ ...formData, phoneNumber: e.target.value })
                 }
                 placeholder="Nhập số điện thoại"
-                disabled={loading}
+                disabled={loading || !canEditField("phoneNumber")}
               />
               {errors.phoneNumber && (
                 <p className="text-sm text-destructive">{errors.phoneNumber}</p>
@@ -220,12 +333,17 @@ export function OrderDialog({
                 placeholder="Tổng tiền sẽ được tính tự động"
                 min="0"
                 step="1000"
-                disabled={loading || !order} // Chỉ đọc khi tạo đơn hàng mới
-                readOnly={!order} // Chỉ đọc khi tạo đơn hàng mới
-                className={!order ? "bg-muted" : ""}
+                disabled={loading || !canEditField("totalAmount")} // Chỉ đọc khi tạo đơn hàng mới
+                readOnly={!canEditField("totalAmount")} // Chỉ đọc khi tạo đơn hàng mới
+                className={!canEditField("totalAmount") ? "bg-muted" : ""}
               />
               {errors.totalAmount && (
                 <p className="text-sm text-destructive">{errors.totalAmount}</p>
+              )}
+              {!canEditField("totalAmount") && order && (
+                <p className="text-xs text-muted-foreground">
+                  Không thể chỉnh sửa tổng tiền khi đơn hàng đã được xác nhận
+                </p>
               )}
               {!order && (
                 <p className="text-xs text-muted-foreground">
@@ -238,22 +356,42 @@ export function OrderDialog({
               <Label htmlFor="status">Trạng thái *</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, status: value })
-                }
-                disabled={loading}
+                onValueChange={handleStatusChange}
+                disabled={loading || checkingStock}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
-                  {orderStatuses.map((status) => (
+                  {getAvailableStatuses().map((status) => (
                     <SelectItem key={status.value} value={status.value}>
                       {status.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {checkingStock && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Đang kiểm tra tồn kho...
+                </div>
+              )}
+              {stockCheckResult && !stockCheckResult.canConfirm && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-red-600">
+                    <AlertTriangle className="h-4 w-4" />
+                    Không đủ hàng trong kho
+                  </div>
+                  {stockCheckResult.insufficientItems.length > 0 && (
+                    <div className="text-xs text-muted-foreground">
+                      Sản phẩm thiếu:{" "}
+                      {stockCheckResult.insufficientItems
+                        .map((item) => item.productName)
+                        .join(", ")}
+                    </div>
+                  )}
+                </div>
+              )}
               {errors.status && (
                 <p className="text-sm text-destructive">{errors.status}</p>
               )}
@@ -270,7 +408,7 @@ export function OrderDialog({
               }
               placeholder="Nhập địa chỉ giao hàng"
               rows={3}
-              disabled={loading}
+              disabled={loading || !canEditField("address")}
             />
             {errors.address && (
               <p className="text-sm text-destructive">{errors.address}</p>

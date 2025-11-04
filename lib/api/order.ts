@@ -109,4 +109,16 @@ export const orderService = {
   // Get order statistics
   getOrderStatistics: async (): Promise<ApiResponse<any>> =>
     apiCall("/Order/statistics"),
+
+  // Check stock availability for order
+  checkStockAvailability: async (
+    orderId: string
+  ): Promise<ApiResponse<{ canConfirm: boolean; insufficientItems: any[] }>> =>
+    apiCall(`/Order/checkStock/${orderId}`),
+
+  // Confirm order with stock validation
+  confirmOrder: async (orderId: string): Promise<ApiResponse<OrderResponse>> =>
+    apiCall(`/Order/confirm/${orderId}`, {
+      method: "PUT",
+    }),
 };

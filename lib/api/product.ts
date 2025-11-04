@@ -22,6 +22,8 @@ export const productService = {
     formData.append("description", data.description || "");
     formData.append("status", data.status);
     formData.append("warrantyPeriod", data.warrantyPeriod.toString());
+    if (data.isSerial !== undefined)
+      formData.append("isSerial", data.isSerial.toString());
     if (subCategoryId) formData.append("subCategoryId", subCategoryId);
     formData.append("thumbnail", thumbnail);
 
@@ -57,6 +59,8 @@ export const productService = {
     if (data.status !== undefined) formData.append("status", data.status);
     if (data.warrantyPeriod !== undefined)
       formData.append("warrantyPeriod", data.warrantyPeriod.toString());
+    if (data.isSerial !== undefined)
+      formData.append("isSerial", data.isSerial.toString());
     if (brandId !== undefined) formData.append("brandId", brandId);
     if (categoryId !== undefined) formData.append("categoryId", categoryId);
     if (subCategoryId !== undefined)

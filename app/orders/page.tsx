@@ -7,6 +7,7 @@ import { OrderTabs } from "@/components/orders/order-tabs";
 import { OrderOverview } from "@/components/orders/order-overview";
 import { OrderDialog } from "@/components/orders/order-dialog";
 import { OrderDetailTable } from "@/components/orders/order-detail-table";
+import { OrderDetailEditor } from "@/components/orders/order-detail-editor";
 import {
   Card,
   CardContent,
@@ -24,6 +25,8 @@ import {
 import { useOrders } from "@/hooks/use-orders";
 import { useOrderDetails } from "@/hooks/use-order-details";
 import { OrderResponse, UpdateOrderRequest } from "@/types";
+import { orderService } from "@/lib/api/order";
+import { toast } from "sonner";
 
 const getStatusText = (status: string) => {
   switch (status.toUpperCase()) {
@@ -45,8 +48,15 @@ const getStatusText = (status: string) => {
 };
 
 export default function OrdersPage() {
-  const { orders, loading, updating, deleting, updateOrder, deleteOrder } =
-    useOrders();
+  const {
+    orders,
+    loading,
+    updating,
+    deleting,
+    updateOrder,
+    deleteOrder,
+    loadAllOrders,
+  } = useOrders();
 
   const {
     orderDetails,
@@ -58,10 +68,12 @@ export default function OrdersPage() {
 
   const [orderDialogOpen, setOrderDialogOpen] = useState(false);
   const [orderDetailsModalOpen, setOrderDetailsModalOpen] = useState(false);
+  const [orderDetailEditorOpen, setOrderDetailEditorOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<OrderResponse | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(
     null
   );
+  const [confirming, setConfirming] = useState<string | null>(null);
 
   const handleEditOrder = (order: OrderResponse) => {
     setEditingOrder(order);
@@ -72,6 +84,55 @@ export default function OrdersPage() {
     setSelectedOrder(order);
     await loadOrderDetails(order.id);
     setOrderDetailsModalOpen(true);
+  };
+
+  const handleEditOrderDetails = async (order: OrderResponse) => {
+    setSelectedOrder(order);
+    await loadOrderDetails(order.id);
+    setOrderDetailEditorOpen(true);
+  };
+
+  const handleConfirmOrder = async (order: OrderResponse) => {
+    setConfirming(order.id);
+    try {
+      // Check stock first
+      const stockCheck = await orderService.checkStockAvailability(order.id);
+      if (!stockCheck.result?.canConfirm) {
+        toast.error("Không thể xác nhận đơn hàng do không đủ hàng trong kho");
+        return false;
+      }
+
+      // Confirm order
+      const response = await orderService.confirmOrder(order.id);
+      if (response.result) {
+        toast.success("Xác nhận đơn hàng thành công");
+        // Refresh orders list without reloading the page
+        await loadAllOrders();
+        return true;
+      }
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi xác nhận đơn hàng");
+    } finally {
+      setConfirming(null);
+    }
+    return false;
+  };
+
+  const handleCheckStock = async (orderId: string) => {
+    try {
+      const response = await orderService.checkStockAvailability(orderId);
+      return response.result || { canConfirm: false, insufficientItems: [] };
+    } catch (error) {
+      return { canConfirm: false, insufficientItems: [] };
+    }
+  };
+
+  const handleOrderUpdated = async () => {
+    if (selectedOrder) {
+      await loadOrderDetails(selectedOrder.id);
+      // Refresh orders list without reloading the page
+      await loadAllOrders();
+    }
   };
 
   const handleUpdateOrder = async (
@@ -129,8 +190,11 @@ export default function OrdersPage() {
               onEdit={handleEditOrder}
               onDelete={handleDeleteOrder}
               onViewDetails={handleViewOrderDetails}
+              onEditDetails={handleEditOrderDetails}
+              onConfirmOrder={handleConfirmOrder}
               loading={loading}
               deleting={deleting}
+              confirming={confirming}
             />
           </CardContent>
         </Card>
@@ -141,8 +205,21 @@ export default function OrdersPage() {
           onOpenChange={setOrderDialogOpen}
           order={editingOrder}
           onUpdate={handleUpdateOrder}
+          onCheckStock={handleCheckStock}
           loading={updating}
         />
+
+        {/* Order Detail Editor */}
+        {selectedOrder && (
+          <OrderDetailEditor
+            key={`order-detail-editor-${selectedOrder.id}`}
+            isOpen={orderDetailEditorOpen}
+            onOpenChange={setOrderDetailEditorOpen}
+            order={selectedOrder}
+            orderDetails={orderDetails}
+            onOrderUpdated={handleOrderUpdated}
+          />
+        )}
 
         {/* Order Details Modal */}
         <Dialog

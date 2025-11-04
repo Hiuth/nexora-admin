@@ -19,8 +19,11 @@ interface OrderTabsProps {
   onEdit: (order: OrderResponse) => void;
   onDelete: (orderId: string) => Promise<boolean>;
   onViewDetails: (order: OrderResponse) => void;
+  onEditDetails?: (order: OrderResponse) => void;
+  onConfirmOrder?: (order: OrderResponse) => Promise<boolean>;
   loading?: boolean;
   deleting?: string | null;
+  confirming?: string | null;
 }
 
 const orderStatuses = [
@@ -77,8 +80,11 @@ export function OrderTabs({
   onEdit,
   onDelete,
   onViewDetails,
+  onEditDetails,
+  onConfirmOrder,
   loading = false,
   deleting = null,
+  confirming = null,
 }: OrderTabsProps) {
   const [activeTab, setActiveTab] = useState("pending");
 
@@ -138,6 +144,7 @@ export function OrderTabs({
               onEdit={onEdit}
               onDelete={onDelete}
               onViewDetails={onViewDetails}
+              onEditDetails={onEditDetails}
               loading={loading}
               deleting={deleting}
             />

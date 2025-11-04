@@ -72,6 +72,18 @@ export function ProductDetailSection({ product }: ProductDetailSectionProps) {
               {product.warrantyPeriod} tháng
             </span>
           </div>
+          <div className="flex justify-between p-2 bg-muted/20 rounded-lg">
+            <span className="text-muted-foreground font-medium text-sm">
+              Quản lý Serial/IMEI:
+            </span>
+            <span
+              className={`font-semibold ${
+                product.isSerial ? "text-blue-600" : "text-gray-500"
+              }`}
+            >
+              {product.isSerial ? "Có" : "Không"}
+            </span>
+          </div>
         </div>
       </div>
     </div>
