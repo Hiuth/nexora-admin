@@ -38,12 +38,13 @@ export function OrderSelector({
   // Filtered orders based on search term
   const filteredOrders = useMemo(() => {
     if (!searchTerm) return processingOrders;
-    
+
     const searchLower = searchTerm.toLowerCase();
-    return processingOrders.filter((order) =>
-      order.id.toLowerCase().includes(searchLower) ||
-      order.customerName.toLowerCase().includes(searchLower) ||
-      order.phoneNumber.includes(searchTerm)
+    return processingOrders.filter(
+      (order) =>
+        order.id.toLowerCase().includes(searchLower) ||
+        order.customerName.toLowerCase().includes(searchLower) ||
+        order.phoneNumber.includes(searchTerm)
     );
   }, [processingOrders, searchTerm]);
 
@@ -93,10 +94,8 @@ export function OrderSelector({
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        <label className="text-sm font-medium">
-          Chọn đơn hàng đang xử lý
-        </label>
-        
+        <label className="text-sm font-medium">Chọn đơn hàng đang xử lý</label>
+
         {/* Search Input */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -116,10 +115,9 @@ export function OrderSelector({
           <SelectContent>
             {filteredOrders.length === 0 ? (
               <div className="px-2 py-1 text-sm text-muted-foreground">
-                {searchTerm 
-                  ? "Không tìm thấy đơn hàng phù hợp" 
-                  : "Không có đơn hàng đang xử lý"
-                }
+                {searchTerm
+                  ? "Không tìm thấy đơn hàng phù hợp"
+                  : "Không có đơn hàng đang xử lý"}
               </div>
             ) : (
               filteredOrders.map((order) => (
@@ -140,7 +138,7 @@ export function OrderSelector({
             )}
           </SelectContent>
         </Select>
-        
+
         {/* Results counter */}
         {searchTerm && (
           <div className="text-xs text-muted-foreground">
