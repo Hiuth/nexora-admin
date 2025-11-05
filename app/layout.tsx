@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   title: "Nexora Admin",
   description: "Admin Dashboard for Nexora",
   generator: "v0.app",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

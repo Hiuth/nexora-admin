@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Activity, TrendingUp, Users, Zap } from "lucide-react";
+import { Calendar, Activity, TrendingUp, Users } from "lucide-react";
 
 export function HeroSection() {
   return (
@@ -53,9 +53,11 @@ export function HeroSection() {
               {/* Main circle */}
               <div className="absolute inset-6 bg-white rounded-full shadow-2xl flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 mx-auto">
-                    <Zap className="w-8 h-8 text-white" />
-                  </div>
+                  <img
+                    src="/logononame.png"
+                    alt="Nexora Logo"
+                    className="w-16 h-16 object-contain mb-4 mx-auto"
+                  />
                   <h3 className="font-bold text-gray-900 text-lg">Nexora</h3>
                   <p className="text-gray-500 text-sm">Management System</p>
                 </div>
@@ -70,26 +72,6 @@ export function HeroSection() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Quick Stats Bar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-100 text-center">
-          <div className="text-2xl font-bold text-gray-900">99.9%</div>
-          <div className="text-sm text-gray-500">Uptime</div>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 text-center">
-          <div className="text-2xl font-bold text-green-600">+24%</div>
-          <div className="text-sm text-gray-500">Tăng trưởng</div>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 text-center">
-          <div className="text-2xl font-bold text-blue-600">Live</div>
-          <div className="text-sm text-gray-500">Real-time</div>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100 text-center">
-          <div className="text-2xl font-bold text-purple-600">Pro</div>
-          <div className="text-sm text-gray-500">Version</div>
         </div>
       </div>
     </div>

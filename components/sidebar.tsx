@@ -128,7 +128,23 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
         {isOpen && (
-          <h1 className="text-xl font-bold text-sidebar-foreground">Nexora</h1>
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="Nexora Logo"
+              className="w-8 h-8 object-contain"
+            />
+            <h1 className="text-xl font-bold text-sidebar-foreground">
+              Nexora
+            </h1>
+          </div>
+        )}
+        {!isOpen && (
+          <img
+            src="/logo.png"
+            alt="Nexora Logo"
+            className="w-8 h-8 object-contain mx-auto"
+          />
         )}
         <button
           onClick={() => setIsOpen(!isOpen)}

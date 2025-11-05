@@ -50,9 +50,9 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
           iconColor: "text-blue-600",
           dotColor: "bg-blue-400",
         };
-      case "completed":
+      case "delivered":
         return {
-          label: "Hoàn thành",
+          label: "Đã giao hàng",
           color: "bg-emerald-100 text-emerald-800 border-emerald-200",
           icon: CheckCircle2,
           iconColor: "text-emerald-600",

@@ -83,9 +83,11 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-              <Lock className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Nexora Logo"
+              className="w-20 h-20 object-contain"
+            />
           </div>
           <CardTitle className="text-2xl font-bold">Đăng nhập</CardTitle>
           <CardDescription>
