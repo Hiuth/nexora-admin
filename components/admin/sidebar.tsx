@@ -96,7 +96,7 @@ export function Sidebar() {
           {isOpen && (
             <div className="flex items-center gap-3">
               <img
-                src="/logo.png"
+                src="/logononame.png"
                 alt="Nexora Logo"
                 className="w-8 h-8 object-contain"
               />
@@ -107,7 +107,7 @@ export function Sidebar() {
           )}
           {!isOpen && (
             <img
-              src="/logo.png"
+              src="/logononame.png"
               alt="Nexora Logo"
               className="w-8 h-8 object-contain mx-auto"
             />

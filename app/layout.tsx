@@ -15,9 +15,9 @@ export const metadata: Metadata = {
   description: "Admin Dashboard for Nexora",
   generator: "v0.app",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: "/logononame.png",
+    shortcut: "/logononame.png",
+    apple: "/logononame.png",
   },
 };
 
