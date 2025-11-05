@@ -7,7 +7,12 @@ export async function apiCall<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
-  const token = AuthManager.getToken();
+  // Ensure we have a valid token before making the call
+  const token = await AuthManager.ensureValidToken();
+
+  if (!token) {
+    throw new Error("Authentication required");
+  }
 
   // Prepare headers
   const headers: Record<string, string> = {
@@ -30,7 +35,7 @@ export async function apiCall<T>(
       headers,
     });
 
-    // If 401 and we have a token, try to refresh
+    // If 401 and we have a token, try to refresh once
     if (response.status === 401 && token) {
       try {
         const newToken = await AuthManager.refreshToken();

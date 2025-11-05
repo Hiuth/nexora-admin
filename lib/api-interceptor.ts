@@ -1,16 +1,24 @@
 import { AuthManager } from "./auth";
+import { TokenManager } from "./token-manager";
 import { buildApiUrl } from "./api-config";
 
 // API interceptor đơn giản với refresh token
 export class ApiInterceptor {
-  // Wrapper cho fetch với auth header
+  // Wrapper cho fetch với auth header và auto token refresh
   static async fetchWithAuth(
     url: string,
     options: RequestInit = {}
   ): Promise<Response> {
-    const token = AuthManager.getToken();
+    // TẠAM THỜI DISABLE TOKEN MANAGER ĐỂ DEBUG
+    const token = AuthManager.getAccessToken();
+
+    // // Đảm bảo có token hợp lệ trước khi gọi API
+    // const token = await TokenManager.ensureValidToken();
 
     if (!token) {
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
       throw new Error("Authentication required");
     }
 
@@ -24,23 +32,10 @@ export class ApiInterceptor {
       headers,
     });
 
-    // Nếu 401 Unauthorized, thử refresh token
+    // Nếu vẫn 401 sau khi đã refresh, logout
     if (response.status === 401) {
-      try {
-        const newToken = await AuthManager.refreshToken();
-        if (newToken) {
-          // Retry với token mới
-          headers.set("Authorization", `Bearer ${newToken}`);
-          return fetch(url, {
-            ...options,
-            headers,
-          });
-        }
-      } catch (error) {
-        console.error("Token refresh failed:", error);
-      }
-
-      // Nếu refresh thất bại, redirect to login
+      console.error("API returned 401 even after token refresh");
+      AuthManager.removeToken();
       if (typeof window !== "undefined") {
         window.location.href = "/login";
       }

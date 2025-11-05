@@ -51,14 +51,13 @@ export default function LoginPage() {
 
       // Call login API
       const response = await authAPI.login(formData);
-      console.log("API Response:", response);
 
       if (response.code === 1000 && response.result) {
-        console.log("Login successful!");
-
-        // Lưu access token (result chính là access token)
-        // Trong JWT, refresh token sẽ được embedded hoặc xử lý riêng
-        AuthManager.saveToken(response.result);
+        // Lưu cả access token và refresh token
+        AuthManager.saveTokens(
+          response.result.accessToken,
+          response.result.refreshToken
+        );
 
         // Show success message
         toast.success("Đăng nhập thành công!");
@@ -67,7 +66,6 @@ export default function LoginPage() {
         router.push("/");
       } else {
         // Handle API error
-        console.log("Login failed:", response.message);
         setError(response.message || "Đăng nhập thất bại");
       }
     } catch (error: any) {

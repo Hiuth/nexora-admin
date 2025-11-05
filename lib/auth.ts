@@ -3,38 +3,83 @@ import { API_CONFIG, buildApiUrl } from "./api-config";
 
 // Auth utilities and token management
 export class AuthManager {
-  private static readonly TOKEN_KEY = "nexora_admin_token";
+  private static readonly ACCESS_TOKEN_KEY = "nexora_admin_access_token";
+  private static readonly REFRESH_TOKEN_KEY = "nexora_admin_refresh_token";
+  private static refreshPromise: Promise<string | null> | null = null;
 
-  // Save token to localStorage
-  static saveToken(token: string): void {
+  // Configuration for refresh timing
+  private static readonly REFRESH_BEFORE_EXPIRY_MINUTES = 5; // Refresh 5 minutes before expiry (thay vì 10)
+  private static readonly CHECK_INTERVAL_MINUTES = 5; // Check every 5 minutes (thay vì 1 minute)
+
+  // Save access token to localStorage
+  static saveAccessToken(token: string): void {
     if (typeof window !== "undefined") {
-      localStorage.setItem(this.TOKEN_KEY, token);
+      localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
     }
   }
 
-  // Get token from localStorage
+  // Save refresh token to localStorage
+  static saveRefreshToken(token: string): void {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+    }
+  }
+
+  // Save both tokens at once
+  static saveTokens(accessToken: string, refreshToken: string): void {
+    this.saveAccessToken(accessToken);
+    this.saveRefreshToken(refreshToken);
+  }
+
+  // Get access token from localStorage
   static getToken(): string | null {
     if (typeof window !== "undefined") {
-      return localStorage.getItem(this.TOKEN_KEY);
+      return localStorage.getItem(this.ACCESS_TOKEN_KEY);
     }
     return null;
   }
 
-  // Remove token from localStorage
+  // Get access token (alias for getToken)
+  static getAccessToken(): string | null {
+    return this.getToken();
+  }
+
+  // Get refresh token from localStorage
+  static getRefreshToken(): string | null {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    }
+    return null;
+  }
+
+  // Remove all tokens from localStorage
   static removeToken(): void {
     if (typeof window !== "undefined") {
-      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     }
   }
 
-  // Check if user is authenticated
+  // Check if user is authenticated with valid access token
   static isAuthenticated(): boolean {
-    return !!this.getToken();
+    const accessToken = this.getAccessToken();
+
+    if (!accessToken) {
+      return false;
+    }
+
+    // Kiểm tra xem token có hết hạn không
+    if (this.isTokenExpired(accessToken)) {
+      // Có refresh token thì có thể refresh
+      return !!this.getRefreshToken();
+    }
+
+    return true;
   }
 
   // Decode JWT token to get user info (without storing)
   static getUserFromToken(): any {
-    const token = this.getToken();
+    const token = this.getAccessToken();
     if (!token) return null;
 
     try {
@@ -72,16 +117,105 @@ export class AuthManager {
 
   // Check if token is expired
   static isTokenExpired(token: string): boolean {
-    const decoded = this.decodeToken(token);
-    if (!decoded || !decoded.exp) return true;
+    try {
+      const decoded = this.decodeToken(token);
+      if (!decoded || !decoded.exp) {
+        return true;
+      }
 
-    const currentTime = Date.now() / 1000;
-    return decoded.exp < currentTime;
+      const currentTime = Date.now() / 1000;
+      return decoded.exp < currentTime;
+    } catch (error) {
+      console.error("Error checking token expiry:", error);
+      return true;
+    }
+  }
+
+  // Check if token will expire soon (within specified minutes)
+  static isTokenNearExpiry(
+    token: string,
+    minutesBeforeExpiry: number = 5
+  ): boolean {
+    try {
+      const decoded = this.decodeToken(token);
+      if (!decoded || !decoded.exp) {
+        return true;
+      }
+
+      const currentTime = Date.now() / 1000;
+      const timeUntilExpiry = decoded.exp - currentTime;
+      const thresholdSeconds = minutesBeforeExpiry * 60;
+
+      return timeUntilExpiry < thresholdSeconds;
+    } catch (error) {
+      console.error("Error checking token near expiry:", error);
+      return true;
+    }
+  }
+
+  // Get time until token expires (in seconds)
+  static getTokenTimeUntilExpiry(token: string): number {
+    try {
+      const decoded = this.decodeToken(token);
+      if (!decoded || !decoded.exp) {
+        return 0;
+      }
+
+      const currentTime = Date.now() / 1000;
+      return Math.max(0, decoded.exp - currentTime);
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  // Get token status for debugging
+  static getTokenStatus(): {
+    hasAccessToken: boolean;
+    hasRefreshToken: boolean;
+    accessTokenExpiry: Date | null;
+    refreshTokenExpiry: Date | null;
+    timeUntilAccessExpiry: number;
+    timeUntilRefreshExpiry: number;
+    shouldRefreshSoon: boolean;
+  } {
+    const accessToken = this.getAccessToken();
+    const refreshToken = this.getRefreshToken();
+
+    const accessDecoded = accessToken ? this.decodeToken(accessToken) : null;
+    const refreshDecoded = refreshToken ? this.decodeToken(refreshToken) : null;
+
+    const accessExpiry = accessDecoded?.exp
+      ? new Date(accessDecoded.exp * 1000)
+      : null;
+    const refreshExpiry = refreshDecoded?.exp
+      ? new Date(refreshDecoded.exp * 1000)
+      : null;
+
+    const timeUntilAccessExpiry = accessToken
+      ? this.getTokenTimeUntilExpiry(accessToken)
+      : 0;
+    const timeUntilRefreshExpiry = refreshToken
+      ? this.getTokenTimeUntilExpiry(refreshToken)
+      : 0;
+
+    const shouldRefreshSoon = accessToken
+      ? this.isTokenNearExpiry(accessToken, this.REFRESH_BEFORE_EXPIRY_MINUTES)
+      : false;
+
+    return {
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
+      accessTokenExpiry: accessExpiry,
+      refreshTokenExpiry: refreshExpiry,
+      timeUntilAccessExpiry,
+      timeUntilRefreshExpiry,
+      shouldRefreshSoon,
+    };
   }
 
   // Auto logout when token expires
   static checkTokenExpiry(): void {
-    const token = this.getToken();
+    const token = this.getAccessToken();
     if (token && this.isTokenExpired(token)) {
       this.removeToken();
       if (typeof window !== "undefined") {
@@ -90,22 +224,67 @@ export class AuthManager {
     }
   }
 
-  // Refresh token using current token
-  static async refreshToken(): Promise<string | null> {
-    const currentToken = this.getToken();
+  // Ensure we have a valid access token (refresh if needed)
+  static async ensureValidToken(): Promise<string | null> {
+    const accessToken = this.getAccessToken();
 
-    if (!currentToken) {
+    if (!accessToken) {
+      return null;
+    }
+
+    const timeUntilExpiry = this.getTokenTimeUntilExpiry(accessToken);
+
+    // Refresh sớm hơn: Sử dụng config thay vì hardcode
+    if (
+      !this.isTokenNearExpiry(accessToken, this.REFRESH_BEFORE_EXPIRY_MINUTES)
+    ) {
+      return accessToken;
+    }
+
+    // Nếu đã có refresh process đang chạy, chờ nó
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    // Bắt đầu refresh process
+    this.refreshPromise = this.performRefresh();
+
+    try {
+      const newToken = await this.refreshPromise;
+      this.refreshPromise = null;
+      return newToken;
+    } catch (error) {
+      this.refreshPromise = null;
+      console.error("❌ Refresh failed:", error);
+      throw error;
+    }
+  }
+
+  // Perform the actual refresh operation
+  private static async performRefresh(): Promise<string | null> {
+    const refreshToken = this.getRefreshToken();
+
+    if (!refreshToken) {
+      this.removeToken();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
       return null;
     }
 
     try {
-      const response = await authAPI.refreshToken(currentToken);
+      const response = await authAPI.refreshToken(refreshToken);
+
       if (response.code === 1000 && response.result) {
-        // Lưu token mới
-        this.saveToken(response.result);
-        return response.result;
+        // Lưu cả 2 token mới
+        this.saveTokens(
+          response.result.accessToken,
+          response.result.refreshToken
+        );
+        return response.result.accessToken;
       } else {
         // Refresh thất bại, logout
+        console.error("❌ Refresh token failed:", response.message);
         this.removeToken();
         if (typeof window !== "undefined") {
           window.location.href = "/login";
@@ -113,12 +292,36 @@ export class AuthManager {
         return null;
       }
     } catch (error) {
-      console.error("Refresh token failed:", error);
+      console.error("❌ Refresh token API error:", error);
       this.removeToken();
       if (typeof window !== "undefined") {
         window.location.href = "/login";
       }
       return null;
+    }
+  }
+
+  // Refresh token using refresh token (legacy method, use ensureValidToken instead)
+  static async refreshToken(): Promise<string | null> {
+    return this.ensureValidToken();
+  }
+
+  // Force refresh token immediately (for manual refresh)
+  static async forceRefreshToken(): Promise<string | null> {
+    // Clear existing refresh promise to force new refresh
+    this.refreshPromise = null;
+
+    // Start fresh refresh process
+    this.refreshPromise = this.performRefresh();
+
+    try {
+      const newToken = await this.refreshPromise;
+      this.refreshPromise = null;
+      return newToken;
+    } catch (error) {
+      this.refreshPromise = null;
+      console.error("❌ Force refresh failed:", error);
+      throw error;
     }
   }
 }
@@ -129,16 +332,21 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface LoginResponseData {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface LoginResponse {
   code: number;
   message: string;
-  result?: string; // JWT token
+  result?: LoginResponseData;
 }
 
 export interface RefreshTokenResponse {
   code: number;
   message: string;
-  result?: string; // New JWT token
+  result?: LoginResponseData;
 }
 
 export const authAPI = {
@@ -157,7 +365,7 @@ export const authAPI = {
   },
 
   logout: async (): Promise<void> => {
-    const token = AuthManager.getToken();
+    const token = AuthManager.getAccessToken();
     if (!token) return;
 
     try {
@@ -191,7 +399,7 @@ export const authAPI = {
   },
 
   sendOtpForgotPassword: async (): Promise<any> => {
-    const token = AuthManager.getToken();
+    const token = AuthManager.getAccessToken();
     if (!token) throw new Error("Not authenticated");
 
     const response = await fetch(
@@ -208,7 +416,7 @@ export const authAPI = {
   },
 
   resetPassword: async (otp: string, newPassword: string): Promise<any> => {
-    const token = AuthManager.getToken();
+    const token = AuthManager.getAccessToken();
     if (!token) throw new Error("Not authenticated");
 
     const formData = new FormData();

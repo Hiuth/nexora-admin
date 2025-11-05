@@ -13,39 +13,52 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Check authentication status
+  const checkAuth = async () => {
+    const accessToken = AuthManager.getAccessToken();
+    const refreshToken = AuthManager.getRefreshToken();
+
+    // Nếu không có cả 2 token, redirect to login
+    if (!accessToken && !refreshToken) {
+      router.push("/login");
+      return;
+    }
+
+    // Sử dụng ensureValidToken để proactively refresh
+    try {
+      const validToken = await AuthManager.ensureValidToken();
+      if (!validToken) {
+        AuthManager.removeToken();
+        router.push("/login");
+      }
+    } catch (error) {
+      console.error("❌ Auth check failed:", error);
+      AuthManager.removeToken();
+      router.push("/login");
+    }
+  };
+
   useEffect(() => {
     // Skip auth check for login page
     if (pathname === "/login") {
       return;
     }
 
-    // Check authentication status
-    const checkAuth = () => {
-      const token = AuthManager.getToken();
+    // Check auth on mount với delay nhỏ
+    const timer = setTimeout(async () => {
+      await checkAuth();
+    }, 100);
 
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      // Check if token is expired
-      if (AuthManager.isTokenExpired(token)) {
-        AuthManager.removeToken();
-        router.push("/login");
-        return;
-      }
-    };
-
-    // Check auth on mount
-    checkAuth();
-
-    // Set up interval to check token expiry every minute
-    const interval = setInterval(() => {
-      AuthManager.checkTokenExpiry();
-    }, 60000); // Check every minute
+    // Set up interval to check token expiry every 5 minutes
+    const interval = setInterval(async () => {
+      await checkAuth();
+    }, 300000); // 5 phút
 
     // Cleanup interval on unmount
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [pathname, router]);
 
   return <>{children}</>;
@@ -55,16 +68,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 export function useAuth() {
   const router = useRouter();
 
-  const login = (token: string) => {
-    // Lưu token
-    AuthManager.saveToken(token);
+  const login = (accessToken: string, refreshToken: string) => {
+    // Lưu cả 2 token
+    AuthManager.saveTokens(accessToken, refreshToken);
     router.push("/");
   };
 
   const logout = async () => {
     try {
-      // Call logout API với token hiện tại
-      const token = AuthManager.getToken();
+      // Call logout API với access token hiện tại
+      const token = AuthManager.getAccessToken();
       if (token) {
         await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.LOGOUT), {
           method: "POST",
@@ -90,7 +103,7 @@ export function useAuth() {
   };
 
   const getToken = () => {
-    return AuthManager.getToken();
+    return AuthManager.getAccessToken();
   };
 
   return {
