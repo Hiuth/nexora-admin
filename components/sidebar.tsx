@@ -121,12 +121,12 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 z-40",
+        "fixed left-0 top-0 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 z-40 flex flex-col",
         isOpen ? "w-64" : "w-20"
       )}
     >
       {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border flex-shrink-0">
         {isOpen && (
           <div className="flex items-center gap-3">
             <img
@@ -161,7 +161,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-4 overflow-y-auto">
+      <nav className="flex-1 px-2 py-4 overflow-y-auto overflow-x-hidden scrollbar-beautiful">
         {menuGroups.map((group) => (
           <div key={group.title} className="mb-6">
             {isOpen && (
