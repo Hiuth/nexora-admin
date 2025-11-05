@@ -52,14 +52,35 @@ export function useDashboardData() {
         brandService.getAll(),
       ]);
 
+      // Handle both paginated and direct array responses
+      const products = Array.isArray(productsResponse.result)
+        ? productsResponse.result
+        : (productsResponse.result as any)?.items || [];
+
+      const orders = Array.isArray(ordersResponse.result)
+        ? ordersResponse.result
+        : (ordersResponse.result as any)?.items || [];
+
+      const pcBuilds = Array.isArray(pcBuildsResponse.result)
+        ? pcBuildsResponse.result
+        : (pcBuildsResponse.result as any)?.items || [];
+
+      const categories = Array.isArray(categoriesResponse.result)
+        ? categoriesResponse.result
+        : (categoriesResponse.result as any)?.items || [];
+
+      const brands = Array.isArray(brandsResponse.result)
+        ? brandsResponse.result
+        : (brandsResponse.result as any)?.items || [];
+
       setStats({
-        totalProducts: productsResponse.result?.length || 0,
-        totalOrders: ordersResponse.result?.length || 0,
-        totalPcBuilds: pcBuildsResponse.result?.length || 0,
-        totalCategories: categoriesResponse.result?.length || 0,
-        totalBrands: brandsResponse.result?.length || 0,
-        recentOrders: ordersResponse.result?.slice(0, 5) || [],
-        topProducts: productsResponse.result?.slice(0, 5) || [],
+        totalProducts: products.length,
+        totalOrders: orders.length,
+        totalPcBuilds: pcBuilds.length,
+        totalCategories: categories.length,
+        totalBrands: brands.length,
+        recentOrders: orders.slice(0, 5),
+        topProducts: products.slice(0, 5),
       });
     } catch (err) {
       console.error("Error loading dashboard data:", err);

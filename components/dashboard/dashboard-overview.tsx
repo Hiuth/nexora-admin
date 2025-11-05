@@ -8,6 +8,7 @@ import {
   TopProducts,
   LoadingSkeleton,
 } from "@/components/dashboard";
+import { ReportsSummary } from "@/components/dashboard/reports-summary";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 
 export function DashboardOverview() {
@@ -19,7 +20,7 @@ export function DashboardOverview() {
 
   if (error) {
     return (
-      <div className="space-y-8 p-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+      <div className="space-y-8">
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-red-600 text-2xl">⚠️</span>
@@ -34,7 +35,7 @@ export function DashboardOverview() {
   }
 
   return (
-    <div className="space-y-8 p-6 bg-gradient-to-br from-gray-50 via-white to-blue-50 min-h-screen">
+    <div className="space-y-8 -m-6 p-6 bg-gradient-to-br from-gray-50 via-white to-blue-50 min-h-screen">
       {/* Hero Section */}
       <HeroSection />
 
@@ -44,8 +45,12 @@ export function DashboardOverview() {
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Orders - Takes 2 columns */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <RecentOrders orders={stats.recentOrders} />
+          <ReportsSummary
+            totalOrders={stats.totalOrders}
+            totalProducts={stats.totalProducts}
+          />
         </div>
 
         {/* Sidebar - Takes 1 column */}

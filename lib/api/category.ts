@@ -7,6 +7,19 @@ import {
 import { apiCall } from "./base";
 import { API_CONFIG } from "../api-config";
 
+// Category revenue response types
+export interface CategoryRevenueItemResponse {
+  categoryId: string;
+  categoryName: string;
+  totalRevenue: number;
+  orderCount: number;
+}
+
+export interface CategoryRevenueResponse {
+  categories: CategoryRevenueItemResponse[];
+  totalRevenue: number;
+}
+
 export const categoryService = {
   create: async (
     data: CreateCategoryRequest,
@@ -44,4 +57,7 @@ export const categoryService = {
 
   getById: async (id: string): Promise<ApiResponse<CategoryResponse>> =>
     apiCall(`${API_CONFIG.ENDPOINTS.CATEGORY.GET_BY_ID}/${id}`),
+
+  getRevenueSummary: async (): Promise<ApiResponse<CategoryRevenueResponse>> =>
+    apiCall(API_CONFIG.ENDPOINTS.CATEGORY.REVENUE_SUMMARY),
 };

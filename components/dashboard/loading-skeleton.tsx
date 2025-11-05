@@ -2,7 +2,7 @@
 
 export function LoadingSkeleton() {
   return (
-    <div className="space-y-8 p-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen animate-pulse">
+    <div className="space-y-8 -m-6 p-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen animate-pulse">
       {/* Hero Section Skeleton */}
       <div className="relative overflow-hidden">
         {/* Main Hero Card */}

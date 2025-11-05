@@ -17,6 +17,7 @@ export const API_CONFIG = {
       CREATE: "/Category/create",
       UPDATE: "/Category/update",
       DELETE: "/Category/delete",
+      REVENUE_SUMMARY: "/Category/revenueSummary",
     },
 
     // Other entities endpoints

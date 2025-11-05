@@ -1,12 +1,11 @@
 "use client";
 
 import { formatCurrency } from "@/lib/api-utils";
+import Link from "next/link";
 import {
   Package,
   Star,
   TrendingUp,
-  Eye,
-  Heart,
   ShoppingCart,
   Award,
   Zap,
@@ -221,23 +220,8 @@ export function TopProducts({ products }: TopProductsProps) {
                       <div className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors duration-200">
                         {formatCurrency(product.price)}
                       </div>
-                      {isTop3 && (
-                        <div className="text-xs text-green-600 font-medium">
-                          +{20 - index * 5}% sales
-                        </div>
-                      )}
                     </div>
                   </div>
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                    <Eye className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                  </button>
-                  <button className="p-1 hover:bg-red-50 rounded-lg transition-colors duration-200">
-                    <Heart className="w-4 h-4 text-gray-400 hover:text-red-500" />
-                  </button>
                 </div>
               </div>
             </div>
@@ -252,9 +236,11 @@ export function TopProducts({ products }: TopProductsProps) {
             <TrendingUp className="w-4 h-4" />
             <span>Cập nhật realtime</span>
           </div>
-          <button className="text-sm text-orange-600 hover:text-orange-700 font-medium">
-            Xem tất cả sản phẩm
-          </button>
+          <Link href="/products">
+            <button className="text-sm text-orange-600 hover:text-orange-700 font-medium">
+              Xem tất cả sản phẩm
+            </button>
+          </Link>
         </div>
       </div>
     </div>
