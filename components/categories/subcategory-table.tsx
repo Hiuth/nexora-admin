@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -13,21 +13,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Edit, Plus, Search } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Eye, Edit, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { SubCategoryResponse, DialogMode } from "@/types";
 import { subCategoryService } from "@/lib/api";
+import { useCategories } from "@/hooks/use-categories";
 import { SubCategoryDialog } from "./subcategory-dialog";
 
 export function SubCategoryTable() {
   const [subCategories, setSubCategories] = useState<SubCategoryResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>("create");
   const [selectedSubCategory, setSelectedSubCategory] = useState<
     SubCategoryResponse | undefined
   >();
+
+  const { categories } = useCategories();
 
   useEffect(() => {
     loadSubCategories();
@@ -47,16 +58,33 @@ export function SubCategoryTable() {
     }
   };
 
-  const filteredSubCategories = subCategories.filter(
-    (subCategory) =>
-      subCategory.subCategoryName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      subCategory.description
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      subCategory.categoryName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSubCategories = useMemo(() => {
+    return subCategories.filter((subCategory) => {
+      const matchesSearch =
+        subCategory.subCategoryName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        subCategory.description
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        subCategory.categoryName
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase());
+
+      const matchesCategory =
+        selectedCategoryId === "all" ||
+        subCategory.categoryId === selectedCategoryId;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [subCategories, searchTerm, selectedCategoryId]);
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedCategoryId("all");
+  };
+
+  const hasActiveFilters = searchTerm !== "" || selectedCategoryId !== "all";
 
   const handleCreate = () => {
     setSelectedSubCategory(undefined);
@@ -106,7 +134,9 @@ export function SubCategoryTable() {
               Thêm danh mục con
             </Button>
           </div>
-          <div className="flex items-center space-x-2">
+
+          {/* Search and Category Filter */}
+          <div className="flex items-center space-x-4">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -116,89 +146,172 @@ export function SubCategoryTable() {
                 className="pl-8"
               />
             </div>
+
+            <div className="w-64">
+              <Select
+                value={selectedCategoryId}
+                onValueChange={setSelectedCategoryId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Lọc theo danh mục cha" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả danh mục</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className="flex items-center gap-2"
+              >
+                <X className="w-4 h-4" />
+                Xóa bộ lọc
+              </Button>
+            )}
           </div>
+
+          {/* Filter Summary */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {searchTerm && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Tìm kiếm: "{searchTerm}"
+                  <X
+                    className="w-3 h-3 cursor-pointer"
+                    onClick={() => setSearchTerm("")}
+                  />
+                </Badge>
+              )}
+              {selectedCategoryId !== "all" && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Danh mục:{" "}
+                  {
+                    categories.find((c) => c.id === selectedCategoryId)
+                      ?.categoryName
+                  }
+                  <X
+                    className="w-3 h-3 cursor-pointer"
+                    onClick={() => setSelectedCategoryId("all")}
+                  />
+                </Badge>
+              )}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Hình ảnh</TableHead>
-                  <TableHead>Tên danh mục con</TableHead>
-                  <TableHead>Mô tả</TableHead>
-                  <TableHead>Danh mục cha</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSubCategories.length === 0 ? (
+          <div className="space-y-4">
+            {/* Results count */}
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">
+                Hiển thị {filteredSubCategories.length} / {subCategories.length}{" "}
+                danh mục con
+              </p>
+            </div>
+
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      Không có dữ liệu
-                    </TableCell>
+                    <TableHead>Hình ảnh</TableHead>
+                    <TableHead>Tên danh mục con</TableHead>
+                    <TableHead>Mô tả</TableHead>
+                    <TableHead>Danh mục cha</TableHead>
+                    <TableHead className="text-right">Thao tác</TableHead>
                   </TableRow>
-                ) : (
-                  filteredSubCategories.map((subCategory) => (
-                    <TableRow key={subCategory.id}>
-                      <TableCell>
-                        {subCategory.subCategoryImg ? (
-                          <img
-                            src={subCategory.subCategoryImg}
-                            alt={subCategory.subCategoryName}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
-                            <span className="text-xs text-gray-500">
-                              No Image
-                            </span>
+                </TableHeader>
+                <TableBody>
+                  {filteredSubCategories.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8">
+                        {hasActiveFilters ? (
+                          <div className="space-y-2">
+                            <p>
+                              Không tìm thấy danh mục con nào với bộ lọc hiện
+                              tại
+                            </p>
+                            <Button variant="outline" onClick={clearFilters}>
+                              Xóa bộ lọc
+                            </Button>
                           </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {subCategory.subCategoryName}
-                      </TableCell>
-                      <TableCell>
-                        {subCategory.description ? (
-                          <span className="text-sm text-muted-foreground">
-                            {subCategory.description.length > 50
-                              ? `${subCategory.description.substring(0, 50)}...`
-                              : subCategory.description}
-                          </span>
                         ) : (
-                          <span className="text-sm text-muted-foreground">
-                            Chưa có mô tả
-                          </span>
+                          "Không có dữ liệu"
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {subCategory.categoryName || subCategory.categoryId}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleView(subCategory)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(subCategory)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                        </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredSubCategories.map((subCategory) => (
+                      <TableRow key={subCategory.id}>
+                        <TableCell>
+                          {subCategory.subCategoryImg ? (
+                            <img
+                              src={subCategory.subCategoryImg}
+                              alt={subCategory.subCategoryName}
+                              className="w-12 h-12 object-cover rounded"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                              <span className="text-xs text-gray-500">
+                                No Image
+                              </span>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {subCategory.subCategoryName}
+                        </TableCell>
+                        <TableCell>
+                          {subCategory.description ? (
+                            <span className="text-sm text-muted-foreground">
+                              {subCategory.description.length > 50
+                                ? `${subCategory.description.substring(
+                                    0,
+                                    50
+                                  )}...`
+                                : subCategory.description}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              Chưa có mô tả
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">
+                            {subCategory.categoryName || subCategory.categoryId}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleView(subCategory)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(subCategory)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
