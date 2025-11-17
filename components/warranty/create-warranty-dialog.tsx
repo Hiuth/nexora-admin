@@ -22,6 +22,7 @@ interface CreateWarrantyDialogProps {
   orderDetails: OrderDetailResponse[];
   existingWarranties: WarrantyRecordResponse[];
   onCreateWarranty: (productId: string, productUnitId: string) => Promise<void>;
+  onCreateWarrantyForNonSerial: (productId: string) => Promise<void>;
   creating: boolean;
 }
 
@@ -31,6 +32,7 @@ export function CreateWarrantyDialog({
   orderDetails,
   existingWarranties,
   onCreateWarranty,
+  onCreateWarrantyForNonSerial,
   creating,
 }: CreateWarrantyDialogProps) {
   const [selectedOrderDetail, setSelectedOrderDetail] =
@@ -40,6 +42,19 @@ export function CreateWarrantyDialog({
 
   // Get productIds that already have warranties
   const existingWarrantyProductIds = existingWarranties.map((w) => w.productId);
+
+  const handleCreateWarrantyForNonSerial = async () => {
+    if (!selectedOrderDetail) return;
+
+    try {
+      await onCreateWarrantyForNonSerial(selectedOrderDetail.productId);
+      // Reset selections after successful creation
+      setSelectedOrderDetail(null);
+      setSelectedProductUnit(null);
+    } catch (error) {
+      // Error is handled in parent component
+    }
+  };
 
   const handleCreateWarranty = async () => {
     if (!selectedOrderDetail || !selectedProductUnit) return;
@@ -96,6 +111,7 @@ export function CreateWarrantyDialog({
                 selectedProductUnit={selectedProductUnit}
                 onSelectProductUnit={setSelectedProductUnit}
                 onCreateWarranty={handleCreateWarranty}
+                onCreateWarrantyForNonSerial={handleCreateWarrantyForNonSerial}
                 creating={creating}
               />
             </div>

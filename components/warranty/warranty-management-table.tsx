@@ -141,6 +141,38 @@ export function WarrantyTable({
     }
   };
 
+  const handleCreateWarrantyForNonSerial = async (productId: string) => {
+    if (!selectedOrder) return;
+
+    setCreating(true);
+    try {
+      // For non-serial products, pass empty string for productUnitId
+      await warrantyRecordService.create(
+        productId,
+        selectedOrder.id,
+        ""
+      );
+
+      toast({
+        title: "Thành công",
+        description: "Tạo bảo hành thành công cho sản phẩm không có serial",
+      });
+
+      loadWarranties();
+      onRefresh?.();
+    } catch (error) {
+      console.error("Error creating warranty for non-serial product:", error);
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Không thể tạo bảo hành cho sản phẩm không có serial",
+      });
+      throw error; // Re-throw to handle in dialog
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const handleUpdateWarranty = async () => {
     if (!selectedWarranty || !updateStatus) return;
 
@@ -387,6 +419,7 @@ export function WarrantyTable({
         orderDetails={orderDetails}
         existingWarranties={warranties}
         onCreateWarranty={handleCreateWarranty}
+        onCreateWarrantyForNonSerial={handleCreateWarrantyForNonSerial}
         creating={creating}
       />
 

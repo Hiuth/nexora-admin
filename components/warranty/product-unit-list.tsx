@@ -15,14 +15,17 @@ import {
   Loader2,
   Search,
 } from "lucide-react";
-import { OrderDetailResponse, ProductUnitResponse } from "@/types";
+import { OrderDetailResponse, ProductUnitResponse, ProductResponse } from "@/types";
 import { useProductUnits } from "@/hooks/use-product-units";
+import { productService } from "@/lib/api";
+import React from "react";
 
 interface ProductUnitListProps {
   selectedOrderDetail: OrderDetailResponse | null;
   selectedProductUnit: ProductUnitResponse | null;
   onSelectProductUnit: (productUnit: ProductUnitResponse) => void;
   onCreateWarranty: () => void;
+  onCreateWarrantyForNonSerial?: () => void;
   creating: boolean;
 }
 
@@ -31,11 +34,34 @@ export function ProductUnitList({
   selectedProductUnit,
   onSelectProductUnit,
   onCreateWarranty,
+  onCreateWarrantyForNonSerial,
   creating,
 }: ProductUnitListProps) {
+  const [productInfo, setProductInfo] = React.useState<ProductResponse | null>(null);
+  const [loadingProduct, setLoadingProduct] = React.useState(false);
+  
   const { productUnits, loading } = useProductUnits(
     selectedOrderDetail?.productId
   );
+
+  // Fetch product information to check if it has serial
+  React.useEffect(() => {
+    if (selectedOrderDetail?.productId) {
+      setLoadingProduct(true);
+      productService
+        .getById(selectedOrderDetail.productId)
+        .then((response) => {
+          // ApiResponse structure: { code: 1000, message: "...", result: T }
+          setProductInfo(response.result || null);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch product info:", error);
+        })
+        .finally(() => {
+          setLoadingProduct(false);
+        });
+    }
+  }, [selectedOrderDetail?.productId]);
 
   // Filter only sold product units (for warranty)
   const soldProductUnits = productUnits.filter(
@@ -138,12 +164,48 @@ export function ProductUnitList({
       ) : soldProductUnits.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center py-8 space-y-2">
+            <div className="text-center py-8 space-y-4">
               <AlertCircle className="h-12 w-12 text-orange-500 mx-auto" />
-              <h4 className="font-medium">Không có sản phẩm đã bán</h4>
-              <p className="text-muted-foreground text-sm">
-                Sản phẩm này hiện không có đơn vị nào đã bán để tạo bảo hành
-              </p>
+              <div>
+                <h4 className="font-medium">
+                  {loadingProduct 
+                    ? "Đang tải thông tin sản phẩm..."
+                    : productInfo?.isSerial 
+                    ? "Không có sản phẩm đã bán" 
+                    : "Sản phẩm không có serial"
+                  }
+                </h4>
+                <p className="text-muted-foreground text-sm">
+                  {loadingProduct 
+                    ? "Vui lòng chờ..."
+                    : productInfo?.isSerial 
+                    ? "Sản phẩm này hiện không có đơn vị nào đã bán để tạo bảo hành"
+                    : "Sản phẩm này không cần theo dõi serial, bạn có thể tạo bảo hành trực tiếp"
+                  }
+                </p>
+              </div>
+              
+              {/* Show create warranty button for non-serial products */}
+              {!loadingProduct && productInfo && productInfo.isSerial === false && onCreateWarrantyForNonSerial && (
+                <Button
+                  onClick={onCreateWarrantyForNonSerial}
+                  disabled={creating}
+                  className="mt-4"
+                  size="lg"
+                >
+                  {creating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang tạo...
+                    </>
+                  ) : (
+                    <>
+                      <Package2 className="mr-2 h-4 w-4" />
+                      Tạo bảo hành
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
