@@ -265,18 +265,26 @@ export function SubCategoryTable() {
                           )}
                         </TableCell>
                         <TableCell className="font-medium">
-                          {subCategory.subCategoryName}
+                          <div
+                            className="max-w-[150px] truncate"
+                            title={subCategory.subCategoryName}
+                          >
+                            {subCategory.subCategoryName}
+                          </div>
                         </TableCell>
                         <TableCell>
                           {subCategory.description ? (
-                            <span className="text-sm text-muted-foreground">
+                            <div
+                              className="max-w-[200px] text-sm text-muted-foreground"
+                              title={subCategory.description}
+                            >
                               {subCategory.description.length > 50
                                 ? `${subCategory.description.substring(
                                     0,
                                     50
                                   )}...`
                                 : subCategory.description}
-                            </span>
+                            </div>
                           ) : (
                             <span className="text-sm text-muted-foreground">
                               Chưa có mô tả
@@ -284,7 +292,13 @@ export function SubCategoryTable() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary">
+                          <Badge
+                            variant="secondary"
+                            className="max-w-[120px] truncate"
+                            title={
+                              subCategory.categoryName || subCategory.categoryId
+                            }
+                          >
                             {subCategory.categoryName || subCategory.categoryId}
                           </Badge>
                         </TableCell>

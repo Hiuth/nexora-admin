@@ -3,17 +3,14 @@
 import { useState, useEffect } from "react";
 import { ProductResponse, ProductImgResponse } from "@/types";
 import { productImgService } from "@/lib/api";
-import Image from "next/image";
+import { EnhancedImage } from "@/components/ui/enhanced-image";
+import { SuperEnhancedImage } from "@/components/ui/super-enhanced-image";
 
 interface ProductImageGalleryProps {
   product: ProductResponse;
-  onImageClick: (index: number) => void;
 }
 
-export function ProductImageGallery({
-  product,
-  onImageClick,
-}: ProductImageGalleryProps) {
+export function ProductImageGallery({ product }: ProductImageGalleryProps) {
   const [productImages, setProductImages] = useState<ProductImgResponse[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0); // 0 = thumbnail
@@ -68,8 +65,6 @@ export function ProductImageGallery({
 
   const handleImageClick = (index: number) => {
     setSelectedImageIndex(index);
-    // Don't open modal, just change the displayed image
-    // onImageClick(index);
   };
 
   return (
@@ -81,13 +76,16 @@ export function ProductImageGallery({
       {/* Main Display Image */}
       <div className="relative aspect-square rounded-lg overflow-hidden border border-border shadow-sm max-w-xs mx-auto">
         {allImages.length > 0 && allImages[selectedImageIndex] ? (
-          <div className="relative w-full h-full group">
-            <Image
+          <div className="relative w-full h-full group enhanced-image-container">
+            <SuperEnhancedImage
               src={allImages[selectedImageIndex].url}
               alt={allImages[selectedImageIndex].alt}
               fill
-              className="object-cover transition-transform duration-300"
+              className="object-cover main-image-enhanced"
               sizes="300px"
+              quality={100}
+              enhance={true}
+              upscaleFactor={3}
             />
           </div>
         ) : (
@@ -116,19 +114,22 @@ export function ProductImageGallery({
             {allImages.map((img, index) => (
               <div
                 key={index}
-                className={`relative aspect-square rounded-md overflow-hidden border cursor-pointer hover:shadow-md transition-all duration-200 ${
+                className={`relative aspect-square rounded-md overflow-hidden border cursor-pointer hover:shadow-md transition-all duration-200 enhanced-image-container ${
                   selectedImageIndex === index
                     ? "border-primary border-2 ring-2 ring-primary/20"
                     : "border-border hover:border-primary"
                 }`}
                 onClick={() => handleImageClick(index)}
               >
-                <Image
+                <SuperEnhancedImage
                   src={img.url}
                   alt={img.alt}
                   fill
-                  className="object-cover transition-transform duration-300"
+                  className="object-cover thumbnail-enhanced"
                   sizes="80px"
+                  quality={100}
+                  enhance={true}
+                  upscaleFactor={4}
                 />
 
                 {/* Selected indicator */}

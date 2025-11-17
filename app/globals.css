@@ -176,3 +176,108 @@
     background: linear-gradient(to bottom, #3730a3, #5b21b6);
   }
 }
+
+/* Image enhancement for small images */
+.enhanced-image {
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: pixelated;
+}
+
+.enhanced-image-smooth {
+  image-rendering: smooth;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Better scaling for small images */
+.upscaled-image {
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated;
+  transform-origin: center;
+}
+
+/* Enhanced image rendering for better quality */
+.pixel-perfect {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+
+  /* Stronger enhancements for small images */
+  filter: contrast(1.2) brightness(1.03) saturate(1.1)
+    drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.3)) url("#sharpen");
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Prevent blur on scaling */
+  -ms-interpolation-mode: nearest-neighbor;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Enhanced image container with subpixel precision */
+.enhanced-image-container {
+  /* Force subpixel rendering */
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+
+  /* Better scaling algorithm */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+
+  /* Add subtle outline to enhance edges */
+  filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.1));
+}
+
+/* Super enhancement for small images */
+.upscaled-image {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+
+  /* Aggressive enhancement for thumbnails with unsharp mask */
+  filter: contrast(1.25) brightness(1.04) saturate(1.15)
+    drop-shadow(0 0 0.3px rgba(0, 0, 0, 0.4)) url("#unsharp-mask");
+  transform-origin: center;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Specific enhancement for thumbnails */
+.thumbnail-enhanced {
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+
+  /* Strong enhancement for small thumbnails with SVG filter */
+  filter: contrast(1.3) brightness(1.05) saturate(1.2)
+    drop-shadow(0 0 0.2px rgba(0, 0, 0, 0.5)) url("#sharpen");
+  transform: translateZ(0);
+
+  /* Prevent anti-aliasing */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+}
+
+/* Main image enhancement */
+.main-image-enhanced {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+
+  /* Moderate enhancement for main display */
+  filter: contrast(1.15) brightness(1.02) saturate(1.08)
+    drop-shadow(0 0 1px rgba(0, 0, 0, 0.2));
+  transform: translateZ(0);
+}
+
+/* SVG Filters for advanced image enhancement */
+.image-filters {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}

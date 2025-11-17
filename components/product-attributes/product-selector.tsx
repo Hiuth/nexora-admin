@@ -190,9 +190,6 @@ export function ProductSelector({
                 <span className="font-medium text-sm sm:text-base truncate flex-1">
                   {selectedProduct.productName}
                 </span>
-                <span className="text-xs text-muted-foreground hidden sm:inline">
-                  ID: {selectedProduct.id}
-                </span>
               </div>
             )}
           </SelectValue>
@@ -211,13 +208,11 @@ export function ProductSelector({
           ) : (
             filteredProducts.map((product) => (
               <SelectItem key={product.id} value={product.id}>
-                <div className="flex flex-col w-full">
-                  <span className="font-medium text-sm sm:text-base truncate">
+                <div className="flex items-center gap-2 w-full">
+                  <span className="font-medium text-sm sm:text-base truncate flex-1">
                     {product.productName}
                   </span>
-                  <span className="text-xs text-muted-foreground truncate">
-                    ID: {product.id} • {product.brandName}
-                  </span>
+                  <span className="text-xs truncate">{product.brandName}</span>
                 </div>
               </SelectItem>
             ))

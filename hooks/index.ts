@@ -2,5 +2,6 @@ export { useProductUnits } from "./use-product-units";
 export { useCategories } from "./use-categories";
 export { useSubCategories } from "./use-subcategories";
 export { useProducts } from "./use-products";
+export { useProductsInfinite } from "./use-products-infinite";
 export { useOrders } from "./use-orders";
 export { useOrderDetails } from "./use-order-details";

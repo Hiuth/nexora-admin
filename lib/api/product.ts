@@ -74,32 +74,68 @@ export const productService = {
     });
   },
 
-  getAll: async (): Promise<ApiResponse<ProductResponse[]>> =>
-    apiCall(API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL),
+  getAll: async (page?: number, pageSize?: number): Promise<ApiResponse<ProductResponse[]>> => {
+    const params = new URLSearchParams();
+    if (page) params.append('pageNumber', page.toString());
+    if (pageSize) params.append('pageSize', pageSize.toString());
+    
+    const url = `${API_CONFIG.ENDPOINTS.PRODUCT.GET_ALL}${params.toString() ? '?' + params.toString() : ''}`;
+    return apiCall(url);
+  },
 
   getById: async (id: string): Promise<ApiResponse<ProductResponse>> =>
     apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_ID}/${id}`),
 
   getBySubCategoryId: async (
-    subCategoryId: string
-  ): Promise<ApiResponse<ProductResponse[]>> =>
-    apiCall(
-      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_SUBCATEGORY_ID}/${subCategoryId}`
-    ),
+    subCategoryId: string,
+    page?: number,
+    pageSize?: number
+  ): Promise<ApiResponse<ProductResponse[]>> => {
+    const params = new URLSearchParams();
+    if (page) params.append('pageNumber', page.toString());
+    if (pageSize) params.append('pageSize', pageSize.toString());
+    
+    const url = `${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_SUBCATEGORY_ID}/${subCategoryId}${params.toString() ? '?' + params.toString() : ''}`;
+    return apiCall(url);
+  },
 
   getByBrandId: async (
-    brandId: string
-  ): Promise<ApiResponse<ProductResponse[]>> =>
-    apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_BRAND_ID}/${brandId}`),
+    brandId: string,
+    page?: number,
+    pageSize?: number
+  ): Promise<ApiResponse<ProductResponse[]>> => {
+    const params = new URLSearchParams();
+    if (page) params.append('pageNumber', page.toString());
+    if (pageSize) params.append('pageSize', pageSize.toString());
+    
+    const url = `${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_BRAND_ID}/${brandId}${params.toString() ? '?' + params.toString() : ''}`;
+    return apiCall(url);
+  },
 
-  search: async (searchKey: string): Promise<ApiResponse<ProductResponse[]>> =>
-    apiCall(`${API_CONFIG.ENDPOINTS.PRODUCT.SEARCH}/${searchKey}`),
+  search: async (
+    searchKey: string,
+    page?: number,
+    pageSize?: number
+  ): Promise<ApiResponse<ProductResponse[]>> => {
+    const params = new URLSearchParams();
+    if (page) params.append('pageNumber', page.toString());
+    if (pageSize) params.append('pageSize', pageSize.toString());
+    
+    const url = `${API_CONFIG.ENDPOINTS.PRODUCT.SEARCH}/${searchKey}${params.toString() ? '?' + params.toString() : ''}`;
+    return apiCall(url);
+  },
 
   getByPriceRange: async (
     minPrice: number,
-    maxPrice: number
-  ): Promise<ApiResponse<ProductResponse[]>> =>
-    apiCall(
-      `${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_PRICE_RANGE}/${minPrice}/${maxPrice}`
-    ),
+    maxPrice: number,
+    page?: number,
+    pageSize?: number
+  ): Promise<ApiResponse<ProductResponse[]>> => {
+    const params = new URLSearchParams();
+    if (page) params.append('pageNumber', page.toString());
+    if (pageSize) params.append('pageSize', pageSize.toString());
+    
+    const url = `${API_CONFIG.ENDPOINTS.PRODUCT.GET_BY_PRICE_RANGE}/${minPrice}/${maxPrice}${params.toString() ? '?' + params.toString() : ''}`;
+    return apiCall(url);
+  },
 };

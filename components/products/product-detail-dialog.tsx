@@ -11,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import { ProductResponse, ProductImgResponse } from "@/types";
 import { productImgService } from "@/lib/api";
 import { ProductImageGallery } from "./product-image-gallery";
-import { ProductImageModal } from "./product-image-modal";
 import { ProductBasicInfo } from "./product-basic-info";
 import { ProductDetailSection } from "./product-detail-section";
 
@@ -27,8 +26,6 @@ export function ProductDetailDialog({
   onOpenChange,
 }: ProductDetailDialogProps) {
   const [productImages, setProductImages] = useState<ProductImgResponse[]>([]);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const loadProductImages = async (productId: string) => {
     try {
@@ -56,8 +53,6 @@ export function ProductDetailDialog({
     // Reset state when dialog closes
     if (!open) {
       setProductImages([]);
-      setSelectedImageIndex(0);
-      setIsImageModalOpen(false);
     }
   }, [product?.id, open]);
 
@@ -86,30 +81,11 @@ export function ProductDetailDialog({
 
             {/* Cột phải - Hình ảnh compact (1/3 width) */}
             <div className="lg:col-span-1 space-y-4">
-              <ProductImageGallery
-                product={product}
-                onImageClick={(index) => {
-                  // Modal disabled - only gallery interaction
-                  // setSelectedImageIndex(index);
-                  // setIsImageModalOpen(true);
-                }}
-              />
+              <ProductImageGallery product={product} />
             </div>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Modal xem ảnh toàn màn hình - DISABLED */}
-      {/* 
-      <ProductImageModal
-        open={isImageModalOpen}
-        onClose={() => setIsImageModalOpen(false)}
-        product={product}
-        productImages={productImages}
-        selectedImageIndex={selectedImageIndex}
-        onImageChange={setSelectedImageIndex}
-      />
-      */}
     </>
   );
 }

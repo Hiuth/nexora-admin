@@ -1,13 +1,23 @@
 "use client";
 
+import { useState } from "react";
+import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { AttributesResponse } from "@/types";
 
 interface AttributeSelectProps {
@@ -31,24 +41,65 @@ export function AttributeSelect({
   label = "Thuộc tính",
   required = false,
 }: AttributeSelectProps) {
+  const [open, setOpen] = useState(false);
+
+  // Find selected attribute
+  const selectedAttribute = attributes.find((attr) => attr.id === value);
+
   return (
     <div className="space-y-2">
       <Label htmlFor="attributeId">
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
-      <Select value={value} onValueChange={onValueChange} disabled={disabled}>
-        <SelectTrigger id="attributeId">
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          {attributes.map((attribute) => (
-            <SelectItem key={attribute.id} value={attribute.id}>
-              {attribute.attributeName}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={cn(
+              "w-full justify-between font-normal",
+              !value && "text-muted-foreground"
+            )}
+            disabled={disabled}
+          >
+            {selectedAttribute ? selectedAttribute.attributeName : placeholder}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0" align="start">
+          <Command>
+            <CommandInput
+              placeholder="Tìm kiếm thuộc tính..."
+              className="h-9"
+            />
+            <CommandList>
+              <CommandEmpty>Không tìm thấy thuộc tính nào.</CommandEmpty>
+              <CommandGroup>
+                {attributes.map((attribute) => (
+                  <CommandItem
+                    key={attribute.id}
+                    value={attribute.attributeName}
+                    onSelect={() => {
+                      onValueChange(attribute.id === value ? "" : attribute.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === attribute.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {attribute.attributeName}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );

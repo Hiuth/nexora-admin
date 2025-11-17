@@ -1,9 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Select,
   SelectContent,
@@ -11,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { BrandResponse, SubCategoryResponse, CategoryResponse } from "@/types";
 
 interface ProductFormData {
@@ -41,10 +58,21 @@ export function ProductFormFields({
   subCategories,
   onFormDataChange,
 }: ProductFormFieldsProps) {
+  const [open, setOpen] = useState(false);
+  const [brandSearch, setBrandSearch] = useState("");
+
   // Filter subcategories based on selected category
   const filteredSubCategories = subCategories.filter(
     (subCategory) => subCategory.categoryId === formData.categoryId
   );
+
+  // Filter brands based on search
+  const filteredBrands = brands.filter((brand) =>
+    brand.brandName.toLowerCase().includes(brandSearch.toLowerCase())
+  );
+
+  // Get selected brand name for display
+  const selectedBrand = brands.find((brand) => brand.id === formData.brandId);
 
   // Handle category change - reset subcategory when category changes
   const handleCategoryChange = (categoryId: string) => {
@@ -125,21 +153,54 @@ export function ProductFormFields({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="brandId">Thương hiệu</Label>
-          <Select
-            value={formData.brandId}
-            onValueChange={(value) => onFormDataChange({ brandId: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Chọn thương hiệu" />
-            </SelectTrigger>
-            <SelectContent>
-              {brands.map((brand) => (
-                <SelectItem key={brand.id} value={brand.id}>
-                  {brand.brandName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between"
+              >
+                {selectedBrand ? selectedBrand.brandName : "Chọn thương hiệu"}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput
+                  placeholder="Tìm thương hiệu..."
+                  value={brandSearch}
+                  onValueChange={setBrandSearch}
+                />
+                <CommandList>
+                  <CommandEmpty>Không tìm thấy thương hiệu.</CommandEmpty>
+                  <CommandGroup>
+                    {filteredBrands.map((brand) => (
+                      <CommandItem
+                        key={brand.id}
+                        value={brand.id}
+                        onSelect={() => {
+                          onFormDataChange({ brandId: brand.id });
+                          setOpen(false);
+                          setBrandSearch("");
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            formData.brandId === brand.id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {brand.brandName}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="space-y-2">
           <Label htmlFor="categoryId">Danh mục</Label>
