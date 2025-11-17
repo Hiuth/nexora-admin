@@ -92,10 +92,10 @@ export function PcBuildFilter({
 
   return (
     <Card>
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {/* Search Bar */}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -106,24 +106,29 @@ export function PcBuildFilter({
                 className="pl-10"
               />
             </div>
-            <Button onClick={onSearch} className="px-6">
-              <Search className="h-4 w-4 mr-2" />
-              Tìm
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="px-4"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Lọc
-            </Button>
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={onReset} className="px-4">
-                <X className="h-4 w-4 mr-2" />
-                Xóa bộ lọc
+            <div className="flex gap-2">
+              <Button onClick={onSearch} className="whitespace-nowrap">
+                <Search className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Tìm kiếm</span>
+                <span className="sm:hidden">Tìm</span>
               </Button>
-            )}
+              <Button
+                variant="outline"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="whitespace-nowrap"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Bộ lọc</span>
+                <span className="sm:hidden">Lọc</span>
+              </Button>
+              {hasActiveFilters && (
+                <Button variant="outline" onClick={onReset} className="whitespace-nowrap">
+                  <X className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Xóa bộ lọc</span>
+                  <span className="sm:hidden">Xóa</span>
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Advanced Filters */}

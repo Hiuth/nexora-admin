@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   Table,
@@ -55,14 +56,14 @@ export function CreateOrderCart({
 
   return (
     <div className="bg-blue-600 rounded-lg shadow-lg">
-      <div className="text-white p-6">
-        <div className="flex flex-row items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <ShoppingCart className="h-6 w-6" />
+      <div className="text-white p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex-1">
+            <h2 className="text-lg md:text-xl font-semibold flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
               Giỏ Hàng
             </h2>
-            <p className="text-blue-100 mt-1">
+            <p className="text-blue-100 mt-1 text-sm md:text-base">
               {cartItems.length === 0
                 ? "Chưa có sản phẩm nào trong giỏ hàng"
                 : `${
@@ -72,7 +73,7 @@ export function CreateOrderCart({
                   )} VND`}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
               size="sm"
               variant="secondary"
@@ -81,7 +82,8 @@ export function CreateOrderCart({
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Thêm sản phẩm
+              <span className="hidden sm:inline">Thêm sản phẩm</span>
+              <span className="sm:hidden">Thêm</span>
             </Button>
             {cartItems.length > 0 && (
               <Button
@@ -98,16 +100,16 @@ export function CreateOrderCart({
           </div>
         </div>
       </div>
-      <div className="bg-white p-6 rounded-b-lg">
+      <div className="bg-white p-4 md:p-6 rounded-b-lg">
         {cartItems.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
-              <ShoppingCart className="h-10 w-10 text-blue-600" />
+          <div className="text-center py-8 md:py-12">
+            <div className="w-16 md:w-20 h-16 md:h-20 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+              <ShoppingCart className="h-8 md:h-10 w-8 md:w-10 text-blue-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Giỏ hàng trống
             </h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-6 text-sm md:text-base">
               Hãy thêm sản phẩm vào giỏ hàng để tiếp tục
             </p>
             <Button
@@ -121,8 +123,101 @@ export function CreateOrderCart({
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Cart Items Table */}
-            <Table>
+            {/* Mobile Card Layout */}
+            <div className="block md:hidden space-y-4">
+              {cartItems.map((item) => (
+                <Card key={item.id} className="border border-gray-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        {item.product.thumbnail ? (
+                          <img
+                            src={item.product.thumbnail}
+                            alt={item.product.productName}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                              target.nextElementSibling?.classList.remove(
+                                "hidden"
+                              );
+                            }}
+                          />
+                        ) : null}
+                        <Package
+                          className={`h-6 w-6 text-blue-600 ${
+                            item.product.thumbnail ? "hidden" : ""
+                          }`}
+                        />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">
+                          {item.product.productName}
+                        </h4>
+                        <p className="text-xs text-gray-500 mb-2">
+                          Mã: {item.product.id}
+                        </p>
+                        
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant="secondary" className="text-xs">
+                            {item.unitPrice.toLocaleString("vi-VN")} ₫
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            SL: {item.product.stockQuantity}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 w-7 p-0"
+                              onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                              disabled={disabled || item.quantity <= 1}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <span className="min-w-[3rem] text-center text-sm font-medium">
+                              {item.quantity}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 w-7 p-0"
+                              onClick={() => onUpdateQuantity(item.id, Math.min(item.product.stockQuantity, item.quantity + 1))}
+                              disabled={disabled || item.quantity >= item.product.stockQuantity}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          
+                          <div className="text-right">
+                            <div className="font-semibold text-sm">
+                              {(item.quantity * item.unitPrice).toLocaleString("vi-VN")} ₫
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-6 w-6 p-0 mt-1"
+                              onClick={() => onRemoveItem(item.id)}
+                              disabled={disabled}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Desktop Table Layout */}
+            <div className="hidden md:block">
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Sản phẩm</TableHead>
@@ -222,6 +317,7 @@ export function CreateOrderCart({
                 ))}
               </TableBody>
             </Table>
+            </div>
 
             <Separator />
 

@@ -99,6 +99,21 @@ export function ProductConfiguration({
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Package2 className="h-3 w-3 text-green-500" />
+                  <span className="text-gray-600">
+                    <span className="font-medium">Tồn kho:</span>{" "}
+                    <span className={`font-bold ${
+                      selectedProduct.stockQuantity > 10 
+                        ? 'text-green-600' 
+                        : selectedProduct.stockQuantity > 0 
+                        ? 'text-yellow-600' 
+                        : 'text-red-600'
+                    }`}>
+                      {selectedProduct.stockQuantity} sản phẩm
+                    </span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
                   <Star className="h-3 w-3 text-blue-400" />
                   <span className="text-gray-600">
                     <span className="font-medium">Giá gốc:</span>{" "}
@@ -180,6 +195,41 @@ export function ProductConfiguration({
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+            
+            {/* Stock quantity info and warnings */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">Có thể chọn tối đa:</span>
+                <Badge variant={selectedProduct.stockQuantity > 10 ? "secondary" : "destructive"}>
+                  {selectedProduct.stockQuantity} sản phẩm
+                </Badge>
+              </div>
+              
+              {quantity > selectedProduct.stockQuantity && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-2">
+                  <p className="text-xs text-red-600 font-medium">
+                    ⚠️ Số lượng vượt quá tồn kho! Chỉ còn {selectedProduct.stockQuantity} sản phẩm trong kho.
+                  </p>
+                </div>
+              )}
+              
+              {selectedProduct.stockQuantity <= 5 && selectedProduct.stockQuantity > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
+                  <p className="text-xs text-yellow-600 font-medium">
+                    ⚠️ Sản phẩm sắp hết hàng! Chỉ còn {selectedProduct.stockQuantity} sản phẩm.
+                  </p>
+                </div>
+              )}
+              
+              {selectedProduct.stockQuantity === 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-2">
+                  <p className="text-xs text-red-600 font-medium">
+                    ❌ Sản phẩm đã hết hàng! Không thể thêm vào giỏ hàng.
+                  </p>
+                </div>
+              )}
+            </div>
+            
             {errors.quantity && (
               <p className="text-xs text-red-600 bg-red-50 p-2 rounded-lg border border-red-200">
                 {errors.quantity}

@@ -50,81 +50,159 @@ export function PcBuildTable({
 
   return (
     <div className="border rounded-lg overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-gray-50">
-            <TableHead>Tên PC Build</TableHead>
-            <TableHead>Danh mục</TableHead>
-            <TableHead>Giá</TableHead>
-            <TableHead>Trạng thái</TableHead>
-            <TableHead className="text-right">Hành động</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {pcBuilds.map((pcBuild) => (
-            <TableRow key={pcBuild.id} className="hover:bg-gray-50">
-              <TableCell className="font-medium">
-                <div className="flex items-center gap-3">
-                  {pcBuild.thumbnail && (
-                    <img
-                      src={pcBuild.thumbnail}
-                      alt={pcBuild.productName}
-                      className="w-10 h-10 rounded object-cover"
-                    />
-                  )}
+      {/* Desktop Table */}
+      <div className="hidden lg:block">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead>Tên PC Build</TableHead>
+              <TableHead>Danh mục</TableHead>
+              <TableHead>Giá</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead className="text-right">Hành động</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {pcBuilds.map((pcBuild) => (
+              <TableRow key={pcBuild.id} className="hover:bg-gray-50">
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-3">
+                    {pcBuild.thumbnail && (
+                      <img
+                        src={pcBuild.thumbnail}
+                        alt={pcBuild.productName}
+                        className="w-10 h-10 rounded object-cover"
+                      />
+                    )}
+                    <div>
+                      <div className="font-medium">{pcBuild.productName}</div>
+                      {pcBuild.description && (
+                        <div className="text-sm text-gray-500 max-w-xs truncate">
+                          {pcBuild.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
                   <div>
-                    <div className="font-medium">{pcBuild.productName}</div>
-                    {pcBuild.description && (
-                      <div className="text-sm text-gray-500 max-w-xs truncate">
-                        {pcBuild.description}
+                    <div className="font-medium">{pcBuild.categoryName}</div>
+                    {pcBuild.subCategoryName && (
+                      <div className="text-sm text-gray-500">
+                        {pcBuild.subCategoryName}
                       </div>
                     )}
                   </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div>
-                  <div className="font-medium">{pcBuild.categoryName}</div>
-                  {pcBuild.subCategoryName && (
-                    <div className="text-sm text-gray-500">
-                      {pcBuild.subCategoryName}
-                    </div>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="font-medium">
-                {formatCurrency(pcBuild.price)}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  variant="secondary"
-                  className={getStatusColor(pcBuild.status)}
+                </TableCell>
+                <TableCell className="font-medium">
+                  {formatCurrency(pcBuild.price)}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant="secondary"
+                    className={getStatusColor(pcBuild.status)}
+                  >
+                    {getStatusText(pcBuild.status)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onViewDetail(pcBuild)}
+                    >
+                      <Eye size={16} />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(pcBuild)}
+                    >
+                      <Edit size={16} />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Mobile Card Layout */}
+      <div className="lg:hidden space-y-4 p-4">
+        {pcBuilds.map((pcBuild) => (
+          <div key={pcBuild.id} className="bg-white border rounded-lg p-4 space-y-3">
+            {/* Header with thumbnail and name */}
+            <div className="flex items-start gap-3">
+              {pcBuild.thumbnail && (
+                <img
+                  src={pcBuild.thumbnail}
+                  alt={pcBuild.productName}
+                  className="w-16 h-16 rounded object-cover flex-shrink-0"
+                />
+              )}
+              <div className="min-w-0 flex-1">
+                <h3 className="font-medium text-foreground truncate">
+                  {pcBuild.productName}
+                </h3>
+                {pcBuild.description && (
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                    {pcBuild.description}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            {/* Details grid */}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <span className="text-muted-foreground">Danh mục:</span>
+                <div className="font-medium">{pcBuild.categoryName}</div>
+                {pcBuild.subCategoryName && (
+                  <div className="text-muted-foreground text-xs">
+                    {pcBuild.subCategoryName}
+                  </div>
+                )}
+              </div>
+              <div>
+                <span className="text-muted-foreground">Giá:</span>
+                <div className="font-medium">{formatCurrency(pcBuild.price)}</div>
+              </div>
+            </div>
+            
+            {/* Status and actions */}
+            <div className="flex items-center justify-between pt-2 border-t">
+              <Badge
+                variant="secondary"
+                className={`${getStatusColor(pcBuild.status)} text-xs`}
+              >
+                {getStatusText(pcBuild.status)}
+              </Badge>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onViewDetail(pcBuild)}
+                  className="text-xs px-3"
                 >
-                  {getStatusText(pcBuild.status)}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onViewDetail(pcBuild)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEdit(pcBuild)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                  <Eye size={14} className="mr-1" />
+                  Xem
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(pcBuild)}
+                  className="text-xs px-3"
+                >
+                  <Edit size={14} className="mr-1" />
+                  Sửa
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

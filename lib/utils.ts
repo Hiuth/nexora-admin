@@ -24,3 +24,15 @@ export function formatCurrency(amount: number): string {
     currency: "VND",
   }).format(amount);
 }
+
+// Debounce utility for smooth search
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}

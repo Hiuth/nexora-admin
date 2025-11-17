@@ -70,18 +70,18 @@ export const formatDateOnly = (date: Date | string): string => {
 
 export const getStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
-    ACTIVE: "text-green-600 bg-green-100",
-    INACTIVE: "text-red-600 bg-red-100",
-    OUT_OF_STOCK: "text-orange-600 bg-orange-100",
-    PENDING: "text-yellow-600 bg-yellow-100",
-    CONFIRMED: "text-blue-600 bg-blue-100",
-    PROCESSING: "text-purple-600 bg-purple-100",
-    SHIPPED: "text-indigo-600 bg-indigo-100",
-    DELIVERED: "text-green-600 bg-green-100",
-    CANCELLED: "text-red-600 bg-red-100",
-    EXPIRED: "text-red-600 bg-red-100",
-    CLAIMED: "text-orange-600 bg-orange-100",
-    DRAFT: "text-gray-600 bg-gray-100",
+    ACTIVE: "bg-green-500 text-white",
+    INACTIVE: "bg-red-500 text-white",
+    OUT_OF_STOCK: "bg-orange-500 text-white",
+    PENDING: "bg-yellow-500 text-white",
+    CONFIRMED: "bg-blue-500 text-white",
+    PROCESSING: "bg-purple-500 text-white",
+    SHIPPED: "bg-indigo-500 text-white",
+    DELIVERED: "bg-green-500 text-white",
+    CANCELLED: "bg-red-500 text-white",
+    EXPIRED: "bg-red-500 text-white",
+    CLAIMED: "bg-orange-500 text-white",
+    DRAFT: "bg-gray-500 text-white",
     // Product Unit statuses
     AVAILABLE: "bg-green-500 text-white",
     SOLD: "bg-red-500 text-white",
@@ -90,7 +90,7 @@ export const getStatusColor = (status: string): string => {
     DAMAGED: "bg-gray-500 text-white",
   };
 
-  return statusColors[status.toUpperCase()] || "text-gray-600 bg-gray-100";
+  return statusColors[status.toUpperCase()] || "bg-gray-500 text-white";
 };
 
 export const getStatusText = (status: string): string => {

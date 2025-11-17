@@ -107,22 +107,23 @@ export default function PcBuildsPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
+      <div className="space-y-4 md:space-y-6 p-4 md:p-6">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6 md:mb-8">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground truncate">
               Quản lý PC Build
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">
               Quản lý các cấu hình máy tính xây sẵn
             </p>
           </div>
           <button
             onClick={handleCreate}
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            className="flex items-center justify-center gap-2 bg-primary text-primary-foreground px-3 md:px-4 py-2 rounded-lg hover:opacity-90 transition-opacity text-sm md:text-base min-w-fit"
           >
-            <Plus size={20} />
-            Thêm PC Build
+            <Plus size={18} className="md:w-5 md:h-5" />
+            <span className="hidden sm:inline">Thêm PC Build</span>
+            <span className="sm:hidden">Thêm</span>
           </button>
         </div>
 

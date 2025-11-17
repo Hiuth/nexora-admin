@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useProductsInfinite } from "@/hooks/use-products-infinite";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -28,14 +29,17 @@ import {
   ProductResponse,
   BrandResponse,
   CategoryResponse,
+  SubCategoryResponse,
 } from "@/types";
 import {
   pcBuildItemService,
   productService,
   brandService,
   categoryService,
+  subCategoryService,
 } from "@/lib/api";
 import { toast } from "sonner";
+import { debounce } from "@/lib/utils";
 import { ProductFilters } from "./product-filters";
 import { ProductList } from "./product-list";
 import { SelectedProductPreview } from "./selected-product-preview";
@@ -65,19 +69,32 @@ export function PcBuildItemDialog({
   onSuccess,
 }: PcBuildItemDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState<ProductResponse[]>([]);
   const [brands, setBrands] = useState<BrandResponse[]>([]);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [subCategories, setSubCategories] = useState<SubCategoryResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState("");
 
   // Filter states
   const [selectedBrandId, setSelectedBrandId] = useState<string>("all");
   const [selectedFilterCategoryId, setSelectedFilterCategoryId] =
     useState<string>("all");
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("all");
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const [showFilters, setShowFilters] = useState(false);
+
+  // Use infinite scroll hook for products
+  const {
+    products,
+    loading: loadingProducts,
+    loadingMore,
+    hasMore,
+    totalItems,
+    fetchProducts,
+    loadMoreProducts,
+    reset: resetProducts
+  } = useProductsInfinite();
 
   const isEditing = !!pcBuildItem;
 
@@ -92,18 +109,52 @@ export function PcBuildItemDialog({
   // Load initial data
   useEffect(() => {
     if (open) {
-      loadProducts();
       loadBrands();
       loadCategories();
+      loadSubCategories();
+      // Reset and fetch products with initial filters
+      resetProducts();
+      setTimeout(() => {
+        fetchProducts({
+          search: searchTerm,
+          brandId: selectedBrandId === "all" ? undefined : selectedBrandId,
+          subCategoryId: selectedSubCategoryId === "all" ? undefined : selectedSubCategoryId,
+        });
+      }, 100);
     }
   }, [open]);
 
-  // Load products by category
+  // Debounced search to reduce API calls and make search smoother
+  const debouncedFetchProducts = useCallback(
+    debounce((search: string, brand: string, subCategory: string) => {
+      if (open) {
+        setSearchLoading(true);
+        resetProducts();
+        setTimeout(() => {
+          fetchProducts({
+            search: search || undefined,
+            brandId: brand === "all" ? undefined : brand,
+            subCategoryId: subCategory === "all" ? undefined : subCategory,
+          }).finally(() => {
+            setSearchLoading(false);
+          });
+        }, 100);
+      }
+    }, 500), // 500ms delay
+    [open, resetProducts, fetchProducts]
+  );
+
+  // Reset and fetch when filters change (with debounce for search)
+  useEffect(() => {
+    debouncedFetchProducts(searchTerm, selectedBrandId, selectedSubCategoryId);
+  }, [searchTerm, selectedBrandId, selectedSubCategoryId, debouncedFetchProducts]);
+
+  // Reset products when dialog opens
   useEffect(() => {
     if (open) {
-      loadProducts();
+      resetProducts();
     }
-  }, [selectedBrandId, selectedFilterCategoryId, open]);
+  }, [open]);
 
   // Set form values when editing
   useEffect(() => {
@@ -129,93 +180,16 @@ export function PcBuildItemDialog({
       setSelectedProductId("");
       setSelectedBrandId("all");
       setSelectedFilterCategoryId("all");
+      setSelectedSubCategoryId("all");
       setPriceRange({ min: "", max: "" });
       setShowFilters(false);
     }
   }, [open]);
 
-  // Filter products based on search term and filters
-  const filteredProducts = useMemo(() => {
-    let filtered = products;
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (product) =>
-          product.productName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          product.id.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Price range filter
-    if (priceRange.min && !isNaN(Number(priceRange.min))) {
-      filtered = filtered.filter(
-        (product) => product.price >= Number(priceRange.min)
-      );
-    }
-    if (priceRange.max && !isNaN(Number(priceRange.max))) {
-      filtered = filtered.filter(
-        (product) => product.price <= Number(priceRange.max)
-      );
-    }
-
-    return filtered;
-  }, [products, searchTerm, priceRange]);
-
   // Get selected product details
   const selectedProduct = useMemo(() => {
     return products.find((p) => p.id === selectedProductId);
   }, [products, selectedProductId]);
-
-  const loadProducts = async () => {
-    setLoadingProducts(true);
-    try {
-      let response;
-
-      // Apply filters in API calls
-      if (selectedBrandId && selectedBrandId !== "all") {
-        response = await productService.getByBrandId(selectedBrandId);
-      } else {
-        response = await productService.getAll();
-      }
-
-      if (response.code === 1000 && response.result) {
-        const paginatedData = response.result;
-        let filteredProducts =
-          (paginatedData as any).items || paginatedData || [];
-
-        // Handle both paginated response (with .items) and direct array response
-        if (Array.isArray(paginatedData)) {
-          filteredProducts = paginatedData;
-        }
-
-        // Filter by category if needed (client-side since API might not support category filter)
-        if (selectedFilterCategoryId && selectedFilterCategoryId !== "all") {
-          filteredProducts = filteredProducts.filter(
-            (product: ProductResponse) =>
-              product.categoryId === selectedFilterCategoryId
-          );
-        }
-
-        setProducts(filteredProducts);
-      } else {
-        setProducts([]);
-        console.warn(
-          "API returned non-success code:",
-          response.code,
-          response.message
-        );
-      }
-    } catch (error) {
-      console.error("Error loading products:", error);
-      toast.error("Không thể tải danh sách sản phẩm");
-      setProducts([]);
-    } finally {
-      setLoadingProducts(false);
-    }
-  };
 
   const loadBrands = async () => {
     try {
@@ -242,6 +216,20 @@ export function PcBuildItemDialog({
     } catch (error) {
       console.error("Error loading categories:", error);
       setCategories([]);
+    }
+  };
+
+  const loadSubCategories = async () => {
+    try {
+      const response = await subCategoryService.getAll();
+      if (response.code === 1000 && response.result) {
+        setSubCategories(Array.isArray(response.result) ? response.result : []);
+      } else {
+        setSubCategories([]);
+      }
+    } catch (error) {
+      console.error("Error loading subcategories:", error);
+      setSubCategories([]);
     }
   };
 
@@ -308,6 +296,7 @@ export function PcBuildItemDialog({
     setSelectedProductId("");
     setSelectedBrandId("all");
     setSelectedFilterCategoryId("all");
+    setSelectedSubCategoryId("all");
     setPriceRange({ min: "", max: "" });
     setShowFilters(false);
     onOpenChange(false);
@@ -321,13 +310,14 @@ export function PcBuildItemDialog({
   const clearFilters = () => {
     setSelectedBrandId("all");
     setSelectedFilterCategoryId("all");
+    setSelectedSubCategoryId("all");
     setPriceRange({ min: "", max: "" });
     setSearchTerm("");
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh]">
+      <DialogContent className="sm:max-w-[1000px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -341,29 +331,39 @@ export function PcBuildItemDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Product Filters */}
-            <ProductFilters
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              selectedBrandId={selectedBrandId}
-              onBrandChange={setSelectedBrandId}
-              selectedCategoryId={selectedFilterCategoryId}
-              onCategoryChange={setSelectedFilterCategoryId}
-              priceRange={priceRange}
-              onPriceRangeChange={setPriceRange}
-              brands={brands}
-              categories={categories}
-              disabled={loading || loadingProducts}
-              resultCount={filteredProducts.length}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto pr-2 space-y-6 max-h-[calc(90vh-240px)]">
+              {/* Product Filters */}
+              <ProductFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                selectedBrandId={selectedBrandId}
+                onBrandChange={setSelectedBrandId}
+                selectedCategoryId={selectedFilterCategoryId}
+                onCategoryChange={setSelectedFilterCategoryId}
+                selectedSubCategoryId={selectedSubCategoryId}
+                onSubCategoryChange={setSelectedSubCategoryId}
+                priceRange={priceRange}
+                onPriceRangeChange={setPriceRange}
+                brands={brands}
+                categories={categories}
+                subCategories={subCategories}
+                disabled={loading || loadingProducts}
+                searchLoading={searchLoading}
+                resultCount={products.length}
+              />
 
             {/* Product List */}
             <ProductList
-              products={filteredProducts}
+              products={products}
               selectedProductId={selectedProductId}
               onProductSelect={handleProductSelect}
               loading={loadingProducts}
+              loadingMore={loadingMore}
+              hasMore={hasMore}
+              totalItems={totalItems}
+              onLoadMore={loadMoreProducts}
               emptyMessage={
                 searchTerm
                   ? "Không tìm thấy sản phẩm phù hợp"
@@ -388,46 +388,52 @@ export function PcBuildItemDialog({
               )}
             />
 
-            {/* Quantity Input */}
-            <FormField
-              control={form.control}
-              name="quantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Số Lượng</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseInt(e.target.value) || 1)
-                      }
-                      disabled={loading}
-                      className="w-32"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Số lượng sản phẩm trong cấu hình
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            </div>
 
-            <div className="flex justify-end space-x-2 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={loading}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={loading || !selectedProductId}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? "Cập Nhật" : "Thêm Mới"}
-              </Button>
+            {/* Fixed bottom section with quantity and actions */}
+            <div className="border-t pt-4 mt-4 bg-white space-y-4">
+              {/* Quantity Input */}
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Số Lượng</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value) || 1)
+                        }
+                        disabled={loading}
+                        className="w-32"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Số lượng sản phẩm trong cấu hình
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={loading}
+                >
+                  Hủy
+                </Button>
+                <Button type="submit" disabled={loading || !selectedProductId}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isEditing ? "Cập Nhật" : "Thêm Mới"}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>

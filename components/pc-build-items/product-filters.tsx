@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter, X, Search } from "lucide-react";
-import { BrandResponse, CategoryResponse } from "@/types";
+import { Filter, X, Search, Loader2 } from "lucide-react";
+import { BrandResponse, CategoryResponse, SubCategoryResponse } from "@/types";
 
 interface ProductFiltersProps {
   searchTerm: string;
@@ -22,11 +22,15 @@ interface ProductFiltersProps {
   onBrandChange: (value: string) => void;
   selectedCategoryId: string;
   onCategoryChange: (value: string) => void;
+  selectedSubCategoryId?: string;
+  onSubCategoryChange?: (value: string) => void;
   priceRange: { min: string; max: string };
   onPriceRangeChange: (range: { min: string; max: string }) => void;
   brands: BrandResponse[];
   categories: CategoryResponse[];
+  subCategories?: SubCategoryResponse[];
   disabled?: boolean;
+  searchLoading?: boolean;
   resultCount: number;
 }
 
@@ -37,11 +41,15 @@ export function ProductFilters({
   onBrandChange,
   selectedCategoryId,
   onCategoryChange,
+  selectedSubCategoryId = "all",
+  onSubCategoryChange,
   priceRange,
   onPriceRangeChange,
   brands,
   categories,
+  subCategories = [],
   disabled = false,
+  searchLoading = false,
   resultCount,
 }: ProductFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
@@ -49,6 +57,7 @@ export function ProductFilters({
   const clearFilters = () => {
     onBrandChange("all");
     onCategoryChange("all");
+    onSubCategoryChange?.("all");
     onPriceRangeChange({ min: "", max: "" });
     onSearchChange("");
   };
@@ -56,21 +65,35 @@ export function ProductFilters({
   const hasActiveFilters =
     selectedBrandId !== "all" ||
     selectedCategoryId !== "all" ||
+    selectedSubCategoryId !== "all" ||
     priceRange.min ||
     priceRange.max ||
     searchTerm;
+
+  // Filter subcategories based on selected category
+  const filteredSubCategories = selectedCategoryId && selectedCategoryId !== "all"
+    ? subCategories.filter(sub => sub.categoryId === selectedCategoryId)
+    : subCategories;
 
   return (
     <div className="space-y-4">
       {/* Search and Filter Toggle */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          {searchLoading && searchTerm ? (
+            <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 animate-spin" />
+          ) : (
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          )}
           <Input
             placeholder="Tìm kiếm sản phẩm theo tên hoặc mã..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
+            className={`pl-10 transition-all duration-200 ${
+              searchLoading && searchTerm 
+                ? 'bg-blue-50 border-blue-200 focus:border-blue-400' 
+                : ''
+            }`}
             disabled={disabled}
           />
         </div>
@@ -104,7 +127,7 @@ export function ProductFilters({
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Brand Filter */}
             <div className="space-y-2">
               <label className="text-xs font-medium">Thương Hiệu</label>
@@ -132,7 +155,13 @@ export function ProductFilters({
               <label className="text-xs font-medium">Danh Mục</label>
               <Select
                 value={selectedCategoryId}
-                onValueChange={onCategoryChange}
+                onValueChange={(value) => {
+                  onCategoryChange(value);
+                  // Reset subcategory when category changes
+                  if (value === "all") {
+                    onSubCategoryChange?.("all");
+                  }
+                }}
                 disabled={disabled}
               >
                 <SelectTrigger className="h-8">
@@ -143,6 +172,28 @@ export function ProductFilters({
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Subcategory Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium">Danh Mục Con</label>
+              <Select
+                value={selectedSubCategoryId}
+                onValueChange={(value) => onSubCategoryChange?.(value)}
+                disabled={disabled || selectedCategoryId === "all"}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Tất cả" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả danh mục con</SelectItem>
+                  {filteredSubCategories.map((subCategory) => (
+                    <SelectItem key={subCategory.id} value={subCategory.id}>
+                      {subCategory.subCategoryName}
                     </SelectItem>
                   ))}
                 </SelectContent>

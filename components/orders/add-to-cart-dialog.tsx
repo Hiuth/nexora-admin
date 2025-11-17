@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,21 +9,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { ProductResponse } from "@/types";
-import { Loader2, ShoppingCart, X } from "lucide-react";
-import { useProducts } from "@/hooks/use-products";
-import { brandService, subCategoryService } from "@/lib/api";
+import { Loader2, ShoppingCart, X, Package } from "lucide-react";
 import { CartItem } from "./create-order-cart";
-import { ProductSearchFilters } from "./product-search-filters";
-import { ProductList } from "./product-list";
+import { ProductSelectorInfinite } from "./product-selector-infinite";
 import { ProductConfiguration } from "./product-configuration";
 
 interface AddToCartDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddToCart: (item: Omit<CartItem, "id">) => void;
+  onAddToCart: (cartItem: CartItem) => void;
   cartItems: CartItem[];
   loading?: boolean;
 }
@@ -35,128 +30,67 @@ export function AddToCartDialog({
   cartItems,
   loading = false,
 }: AddToCartDialogProps) {
-  // Hooks
-  const { products, loading: productsLoading, fetchProducts } = useProducts();
-
   // State
-  const [selectedProduct, setSelectedProduct] =
-    useState<ProductResponse | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductResponse | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [unitPrice, setUnitPrice] = useState(0);
-
-  // Filter states
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState("");
-  const [brands, setBrands] = useState<any[]>([]);
-  const [subCategories, setSubCategories] = useState<any[]>([]);
-
-  // UI states
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Load data on component mount
-  useEffect(() => {
-    if (isOpen) {
-      fetchProducts();
-      loadBrands();
-      loadSubCategories();
-    }
-  }, [isOpen]);
-
-  const loadBrands = async () => {
-    try {
-      const response = await brandService.getAll();
-      if (response.code === 1000 && response.result) {
-        setBrands(response.result);
-      }
-    } catch (error) {
-      console.error("Failed to load brands:", error);
-    }
-  };
-
-  const loadSubCategories = async () => {
-    try {
-      const response = await subCategoryService.getAll();
-      if (response.code === 1000 && response.result) {
-        setSubCategories(response.result);
-      }
-    } catch (error) {
-      console.error("Failed to load subcategories:", error);
-    }
-  };
-
-  // Reset form when dialog opens/closes
+  // Reset selection when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setSelectedProduct(null);
       setQuantity(1);
       setUnitPrice(0);
-      setSearchTerm("");
-      setSelectedBrand("all");
-      setSelectedSubCategory("all");
       setErrors({});
     }
   }, [isOpen]);
 
-  // Update price when product changes
+  // Update price when product is selected
   useEffect(() => {
     if (selectedProduct) {
       setUnitPrice(selectedProduct.price);
+      setErrors({}); // Clear errors when product is selected
     }
   }, [selectedProduct]);
 
-  // Filter products
-  const filteredProducts = useMemo(() => {
-    return products.filter((product: ProductResponse) => {
-      // Exclude products already in cart
-      const isInCart = cartItems.some((item) => item.product.id === product.id);
-      if (isInCart) return false;
-
-      const matchesSearch =
-        searchTerm === "" ||
-        product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brandName?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesBrand =
-        selectedBrand === "all" ||
-        selectedBrand === "" ||
-        product.brandName === selectedBrand;
-      const matchesSubCategory =
-        selectedSubCategory === "all" ||
-        selectedSubCategory === "" ||
-        product.subCategoryName === selectedSubCategory;
-
-      return matchesSearch && matchesBrand && matchesSubCategory;
-    });
-  }, [products, searchTerm, selectedBrand, selectedSubCategory, cartItems]);
-
-  const validateForm = () => {
+  const handleAddToCart = () => {
+    // Validation
     const newErrors: { [key: string]: string } = {};
-
+    
     if (!selectedProduct) {
       newErrors.product = "Vui lòng chọn sản phẩm";
     }
-
+    
     if (quantity <= 0) {
       newErrors.quantity = "Số lượng phải lớn hơn 0";
     }
-
-    if (selectedProduct && quantity > selectedProduct.stockQuantity) {
-      newErrors.quantity = `Chỉ còn ${selectedProduct.stockQuantity} sản phẩm trong kho`;
+    
+    if (selectedProduct) {
+      if (selectedProduct.stockQuantity === 0) {
+        newErrors.quantity = "Sản phẩm đã hết hàng, không thể thêm vào giỏ hàng";
+      } else if (quantity > selectedProduct.stockQuantity) {
+        newErrors.quantity = `Chỉ còn ${selectedProduct.stockQuantity} sản phẩm trong kho. Vui lòng giảm số lượng.`;
+      }
     }
 
-    if (unitPrice <= 0) {
-      newErrors.unitPrice = "Đơn giá phải lớn hơn 0";
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    if (!selectedProduct) return;
 
-  const handleAddToCart = () => {
-    if (!validateForm() || !selectedProduct) return;
+    // Check if product already in cart
+    const existingItem = cartItems.find(item => item.product.id === selectedProduct.id);
+    if (existingItem) {
+      setErrors({ product: "Sản phẩm đã có trong giỏ hàng" });
+      return;
+    }
 
-    const cartItem: Omit<CartItem, "id"> = {
+    // Add to cart
+    const cartItem: CartItem = {
+      id: `${selectedProduct.id}-${Date.now()}`,
       product: selectedProduct,
       quantity,
       unitPrice,
@@ -166,124 +100,118 @@ export function AddToCartDialog({
     onOpenChange(false);
   };
 
-  const handleClose = () => {
-    setSelectedProduct(null);
-    setQuantity(1);
-    setUnitPrice(0);
-    setErrors({});
-    onOpenChange(false);
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[1000px] max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <DialogHeader className="shrink-0 pb-4">
-          <DialogTitle className="flex items-center gap-3 text-xl">
-            <div className="p-2 bg-blue-400 rounded-lg">
-              <ShoppingCart className="h-6 w-6 text-white" />
-            </div>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[1400px] w-[95vw] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="space-y-3 pb-6 border-b flex-shrink-0">
+          <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
+            <ShoppingCart className="h-6 w-6 text-blue-600" />
             Thêm Sản Phẩm Vào Giỏ Hàng
           </DialogTitle>
-          <DialogDescription className="text-base text-blue-600">
-            Chọn sản phẩm từ danh sách bên trái và cấu hình chi tiết bên phải
+          <DialogDescription className="text-base">
+            Chọn sản phẩm và cấu hình số lượng để thêm vào giỏ hàng. Sử dụng tính năng cuộn để tải thêm sản phẩm.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Content Area - 2 Columns Layout */}
-        <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column - Product Search & List */}
-          <div className="flex flex-col space-y-4 overflow-hidden">
-            {/* Search & Filters */}
-            <ProductSearchFilters
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              selectedBrand={selectedBrand}
-              onBrandChange={setSelectedBrand}
-              selectedSubCategory={selectedSubCategory}
-              onSubCategoryChange={setSelectedSubCategory}
-              brands={brands}
-              subCategories={subCategories}
-              filteredCount={filteredProducts.length}
-              cartCount={cartItems.length}
-            />
-
-            {/* Product List */}
-            <div className="flex-1 overflow-hidden">
-              <ProductList
-                products={filteredProducts}
-                loading={productsLoading}
-                selectedProduct={selectedProduct}
-                onSelectProduct={setSelectedProduct}
-                cartItems={cartItems}
-              />
-            </div>
-          </div>
-
-          {/* Right Column - Product Configuration */}
-          <div className="flex flex-col space-y-4 overflow-hidden">
-            <ProductConfiguration
-              selectedProduct={selectedProduct}
-              quantity={quantity}
-              onQuantityChange={setQuantity}
-              unitPrice={unitPrice}
-              onUnitPriceChange={setUnitPrice}
-              loading={loading}
-              errors={errors}
-            />
-
-            {/* Error Display for no product selected */}
-            {errors.product && (
-              <div className="border-2 border-red-300 bg-red-50 rounded-lg p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                    <X className="h-4 w-4 text-white" />
-                  </div>
-                  <p className="text-red-700 font-medium text-sm">
-                    {errors.product}
-                  </p>
-                </div>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 py-6 flex-1 min-h-0">
+          {/* Product Selection - 2/3 width on extra large screens */}
+          <div className="xl:col-span-2 space-y-6 min-h-0">
+            <div className="bg-gray-50 rounded-xl p-6 h-full max-h-[500px] overflow-hidden">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                Danh Sách Sản Phẩm
+              </h3>
+              <div className="h-[calc(100%-3rem)] overflow-y-auto scrollbar-always border border-gray-200 rounded-lg p-2">
+                <ProductSelectorInfinite
+                  selectedProduct={selectedProduct}
+                  onSelectProduct={setSelectedProduct}
+                  cartItems={cartItems}
+                  loading={loading}
+                />
               </div>
+            </div>
+            {errors.product && (
+              <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded px-3 py-2">
+                {errors.product}
+              </p>
             )}
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="shrink-0 bg-blue-50 border-t-2 border-blue-200 -mx-6 -mb-6 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          {/* Product Configuration - 1/3 width on extra large screens */}
+          <div className="flex flex-col h-full max-h-[500px]">
+            {/* Scrollable Configuration Area */}
+            <div className="flex-1 overflow-y-auto scrollbar-always pr-2 mb-6">
+              <div className="bg-white border rounded-xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center gap-2">
+                  <Package className="h-5 w-5 text-blue-600" />
+                  Cấu Hình Sản Phẩm
+                </h3>
+              
+              <ProductConfiguration
+                selectedProduct={selectedProduct}
+                quantity={quantity}
+                onQuantityChange={setQuantity}
+                unitPrice={unitPrice}
+                onUnitPriceChange={setUnitPrice}
+                loading={loading}
+                errors={errors}
+              />
+
+              {/* Cart Summary */}
               {selectedProduct && (
-                <div className="text-sm text-blue-600">
-                  <span className="font-medium">Đã chọn:</span>{" "}
-                  <span className="text-blue-700 font-bold">
-                    {selectedProduct.productName}
-                  </span>
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="font-medium text-gray-900 mb-3">Tóm Tắt</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Đơn giá:</span>
+                      <span className="font-medium">
+                        {unitPrice.toLocaleString("vi-VN")} ₫
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Số lượng:</span>
+                      <span className="font-medium">{quantity}</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold border-t pt-2 text-blue-600">
+                      <span>Tổng tiền:</span>
+                      <span>
+                        {(unitPrice * quantity).toLocaleString("vi-VN")} ₫
+                      </span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={loading}
-                className="px-6 py-2 border-2 border-blue-200 hover:bg-blue-50"
-              >
-                Hủy bỏ
-              </Button>
+            </div>
+
+            {/* Action Buttons - Fixed at bottom */}
+            <div className="flex-shrink-0 space-y-3">
               <Button
                 onClick={handleAddToCart}
-                disabled={loading || !selectedProduct || quantity <= 0}
-                className="px-8 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold shadow-lg transform transition-all duration-200 hover:scale-105"
+                disabled={!selectedProduct || loading || quantity <= 0 || (selectedProduct && selectedProduct.stockQuantity === 0) || (selectedProduct && quantity > selectedProduct.stockQuantity)}
+                className="w-full h-12 text-base font-medium bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                size="lg"
               >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Thêm Vào Giỏ Hàng
-                {selectedProduct && quantity > 0 && (
-                  <Badge className="ml-2 bg-white text-blue-600 font-bold">
-                    {quantity}
-                  </Badge>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Đang thêm...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Thêm Vào Giỏ Hàng
+                  </>
                 )}
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={loading}
+                className="w-full h-11 text-base"
+              >
+                <X className="mr-2 h-4 w-4" />
+                Đóng
               </Button>
             </div>
           </div>
