@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { PcBuildResponse, DialogMode, CategoryResponse, SubCategoryResponse } from "@/types";
-import { pcBuildService, categoryService, subCategoryService } from "@/lib/api";
+import { pcBuildService, categoryService, subCategoryService, productImgService } from "@/lib/api";
 import { ImageUploadService } from "../products/image-upload-service";
 import { PcBuildFormData } from "./pc-build-form-fields";
 
@@ -202,16 +202,28 @@ export function usePcBuildFormStandalone({
     if (pcBuildResponse.code === 1000 && pcBuildResponse.result) {
       const pcBuildId = pcBuildResponse.result.id;
 
-      // Upload additional images if any (similar to products)
+      // Upload additional images using productImgService (since PC Build inherits from Product)
       if (additionalImages.length > 0) {
         try {
-          // Note: You may need to implement additional image upload for PC builds
-          // For now, we'll just log this
-          console.log('Additional images would be uploaded here:', additionalImages.length);
+          const uploadPromises = additionalImages.map((file) =>
+            productImgService.create(pcBuildId, file)
+          );
+          
+          const uploadResults = await Promise.allSettled(uploadPromises);
+          
+          const failedUploads = uploadResults.filter(
+            (result) => result.status === 'rejected'
+          ).length;
+          
+          if (failedUploads > 0) {
+            toast.warning(
+              `PC Build đã tạo thành công nhưng có ${failedUploads} ảnh bổ sung tải lên thất bại`
+            );
+          }
         } catch (error) {
-          console.error("Failed to upload some additional images:", error);
+          console.error("Failed to upload additional images:", error);
           toast.warning(
-            "PC Build đã tạo thành công nhưng có lỗi khi tải một số ảnh bổ sung"
+            "PC Build đã tạo thành công nhưng có lỗi khi tải ảnh bổ sung"
           );
         }
       }
@@ -248,12 +260,14 @@ export function usePcBuildFormStandalone({
     const categoryChanged = formData.categoryId !== data.categoryId;
     const subCategoryChanged = formData.subCategoryId !== data.subCategoryId;
     const thumbnailChanged = thumbnail !== null;
+    const hasNewAdditionalImages = additionalImages.length > 0;
 
-    if (!hasChanges && !categoryChanged && !subCategoryChanged && !thumbnailChanged) {
+    if (!hasChanges && !categoryChanged && !subCategoryChanged && !thumbnailChanged && !hasNewAdditionalImages) {
       toast.info("Không có thay đổi nào để lưu");
       return;
     }
 
+    // Update PC Build basic info
     await pcBuildService.update(
       data.id,
       categoryChanged ? formData.categoryId : undefined,
@@ -262,7 +276,35 @@ export function usePcBuildFormStandalone({
       thumbnail || undefined
     );
 
-    toast.success("Cập nhật PC Build thành công");
+    // Upload new additional images if any
+    if (hasNewAdditionalImages) {
+      try {
+        const uploadPromises = additionalImages.map((file) =>
+          productImgService.create(data.id, file)
+        );
+        
+        const uploadResults = await Promise.allSettled(uploadPromises);
+        
+        const failedUploads = uploadResults.filter(
+          (result) => result.status === 'rejected'
+        ).length;
+        
+        if (failedUploads > 0) {
+          toast.warning(
+            `PC Build đã cập nhật thành công nhưng có ${failedUploads} ảnh bổ sung tải lên thất bại`
+          );
+        } else {
+          toast.success("Cập nhật PC Build và ảnh bổ sung thành công");
+        }
+      } catch (error) {
+        console.error("Failed to upload additional images:", error);
+        toast.warning(
+          "PC Build đã cập nhật thành công nhưng có lỗi khi tải ảnh bổ sung"
+        );
+      }
+    } else {
+      toast.success("Cập nhật PC Build thành công");
+    }
   };
 
   // Filter subcategories based on selected category

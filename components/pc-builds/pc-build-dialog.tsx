@@ -13,6 +13,7 @@ import { usePcBuildFormStandalone } from "./use-pc-build-form-standalone";
 import { PcBuildFormFields } from "./pc-build-form-fields";
 import { PcBuildThumbnailUpload } from "./pc-build-thumbnail-upload";
 import { PcBuildAdditionalImagesUpload } from "./pc-build-additional-images-upload";
+import { EditModeImageUpload } from "./edit-mode-image-upload";
 
 interface PcBuildDialogProps {
   open: boolean;
@@ -68,30 +69,48 @@ export function PcBuildDialog({
             onFormDataChange={handleFormDataChange}
           />
 
-          {/* Image Upload Section */}
-          <div className="space-y-4">
-            <PcBuildThumbnailUpload
-              thumbnailPreview={thumbnailPreview}
-              onThumbnailChange={handleThumbnailChange}
-              required={mode === "create"}
-            />
+          {/* Image upload section - different for create vs edit */}
+          {mode === "create" ? (
+            <div className="space-y-4">
+              <PcBuildThumbnailUpload
+                thumbnailPreview={thumbnailPreview}
+                onThumbnailChange={handleThumbnailChange}
+                required={true}
+              />
 
-            <PcBuildAdditionalImagesUpload
-              additionalImages={additionalImages}
-              additionalImagesPreview={additionalImagesPreview}
-              onAdditionalImagesChange={handleAdditionalImagesChange}
-              onRemoveImage={removeAdditionalImage}
-            />
-          </div>
+              <PcBuildAdditionalImagesUpload
+                additionalImages={additionalImages}
+                additionalImagesPreview={additionalImagesPreview}
+                onAdditionalImagesChange={handleAdditionalImagesChange}
+                onRemoveImage={removeAdditionalImage}
+              />
+            </div>
+          ) : (
+            data && (
+              <EditModeImageUpload
+                pcBuild={data}
+                thumbnailPreview={thumbnailPreview}
+                additionalImages={additionalImages}
+                additionalImagesPreview={additionalImagesPreview}
+                onThumbnailChange={handleThumbnailChange}
+                onAdditionalImagesChange={handleAdditionalImagesChange}
+                onRemoveNewImage={removeAdditionalImage}
+              />
+            )
+          )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-2 pt-4 border-t">
+          <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Hủy
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {mode === "create" ? "Tạo PC Build" : "Cập nhật"}
+              {loading
+                ? "Đang xử lý..."
+                : mode === "create"
+                ? "Tạo"
+                : "Cập nhật"}
             </Button>
           </div>
         </form>

@@ -41,6 +41,7 @@ export function EditModeImageUpload({
   const loadExistingImages = async () => {
     try {
       setLoadingExistingImages(true);
+      // Since PC Build inherits from Product, we can use productImgService
       const response = await productImgService.getByProductId(pcBuild.id);
 
       if (response.code === 1000 && response.result) {
