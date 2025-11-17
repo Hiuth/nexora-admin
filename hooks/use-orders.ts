@@ -92,6 +92,24 @@ export function useOrders() {
     async (orderId: string, data: UpdateOrderRequest) => {
       setUpdating(true);
       try {
+        // Validation cho trạng thái CONFIRMED
+        if (data.status === "CONFIRMED") {
+          // Tìm order hiện tại để check isPaid
+          const currentOrder = orders.find(order => order.id === orderId) || 
+                             userOrders.find(order => order.id === orderId);
+          
+          const isPaid = data.isPaid !== undefined ? data.isPaid : currentOrder?.isPaid;
+          
+          if (!isPaid) {
+            toast({
+              title: "Lỗi xác nhận đơn hàng",
+              description: "Đơn hàng chỉ có thể xác nhận khi đã thanh toán",
+              variant: "destructive",
+            });
+            return false;
+          }
+        }
+
         const response = await orderService.update(orderId, data);
 
         if (response.result) {
@@ -104,13 +122,26 @@ export function useOrders() {
           await loadAllOrders();
           await loadUserOrders();
           return true;
+        } else {
+          // Handle server-side validation errors
+          toast({
+            title: "Lỗi cập nhật đơn hàng",
+            description: response.message || "Không thể cập nhật đơn hàng",
+            variant: "destructive",
+          });
+          return false;
         }
-        return false;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error updating order:", error);
+        
+        // Handle specific error messages from server
+        const errorMessage = error.response?.data?.message || 
+                           error.message || 
+                           "Không thể cập nhật đơn hàng";
+        
         toast({
           title: "Lỗi",
-          description: "Không thể cập nhật đơn hàng",
+          description: errorMessage,
           variant: "destructive",
         });
         return false;

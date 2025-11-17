@@ -155,6 +155,7 @@ export function OrderTable({
               <TableHead>Khách hàng</TableHead>
               <TableHead>Số điện thoại</TableHead>
               <TableHead>Tổng tiền</TableHead>
+              <TableHead>Thanh toán</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
@@ -167,6 +168,11 @@ export function OrderTable({
                 <TableCell>{order.customerName}</TableCell>
                 <TableCell>{order.phoneNumber}</TableCell>
                 <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
+                <TableCell>
+                  <Badge variant={order.isPaid ? "default" : "secondary"}>
+                    {order.isPaid ? "Đã thanh toán" : "Chưa thanh toán"}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <Badge variant={getStatusVariant(order.status)}>
                     {getStatusText(order.status)}

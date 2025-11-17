@@ -79,6 +79,7 @@ export interface OrderResponse {
   customerName: string; // Match actual API response (camelCase)
   phoneNumber: string;
   address: string;
+  isPaid: boolean;
 }
 
 export interface OrderDetailResponse {

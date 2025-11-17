@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   User,
   Phone,
@@ -56,6 +57,7 @@ export function CreateOrderForm({
     customerName: "",
     phoneNumber: "",
     address: "",
+    isPaid: false,
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -115,6 +117,7 @@ export function CreateOrderForm({
         customerName: "",
         phoneNumber: "",
         address: "",
+        isPaid: false,
       });
       setErrors({});
     }
@@ -280,6 +283,22 @@ export function CreateOrderForm({
                 {errors.status && (
                   <p className="text-sm text-destructive">{errors.status}</p>
                 )}
+              </div>
+
+              {/* Payment Status */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isPaid"
+                  checked={formData.isPaid}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isPaid: !!checked })
+                  }
+                  disabled={isFormDisabled}
+                />
+                <Label htmlFor="isPaid" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Đã thanh toán
+                </Label>
               </div>
             </div>
 

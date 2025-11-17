@@ -137,6 +137,7 @@ export interface CreateOrderRequest {
   customerName: string;
   phoneNumber: string;
   address: string;
+  isPaid?: boolean;
 }
 
 export interface UpdateOrderRequest {
@@ -145,6 +146,7 @@ export interface UpdateOrderRequest {
   customerName?: string;
   phoneNumber?: string;
   address?: string;
+  isPaid?: boolean;
 }
 
 // OrderDetail request types

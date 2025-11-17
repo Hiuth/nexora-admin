@@ -25,6 +25,7 @@ interface Order {
   totalAmount: number;
   status: string;
   orderDate: string;
+  isPaid: boolean;
 }
 
 interface RecentOrdersProps {
@@ -263,6 +264,12 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
                           className={`w-3 h-3 ${statusConfig.iconColor}`}
                         />
                         {statusConfig.label}
+                      </Badge>
+                      <Badge
+                        variant={order.isPaid ? "default" : "secondary"}
+                        className="text-xs px-2 py-1"
+                      >
+                        {order.isPaid ? "Đã thanh toán" : "Chưa thanh toán"}
                       </Badge>
                       <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-gray-100 rounded-lg">
                         <ArrowRight className="w-4 h-4 text-gray-400 hover:text-gray-600" />

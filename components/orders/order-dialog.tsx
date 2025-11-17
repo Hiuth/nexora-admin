@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -55,6 +56,7 @@ export function OrderDialog({
     customerName: "",
     phoneNumber: "",
     address: "",
+    isPaid: false,
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -66,6 +68,7 @@ export function OrderDialog({
         customerName: order.customerName,
         phoneNumber: order.phoneNumber,
         address: order.address,
+        isPaid: order.isPaid,
       });
     } else {
       setFormData({
@@ -74,14 +77,29 @@ export function OrderDialog({
         customerName: "",
         phoneNumber: "",
         address: "",
+        isPaid: false,
       });
     }
     setErrors({});
   }, [order, isOpen]);
 
-  // Handle status change - simplified without stock check
+  // Handle status change - with payment validation for CONFIRMED status
   const handleStatusChange = async (newStatus: string) => {
+    // Validation cho trạng thái CONFIRMED
+    if (newStatus === "CONFIRMED" && !formData.isPaid) {
+      setErrors({
+        ...errors,
+        status: "Đơn hàng chỉ có thể xác nhận khi đã thanh toán",
+      });
+      return;
+    }
+    
     setFormData({ ...formData, status: newStatus });
+    // Clear error nếu có
+    if (errors.status) {
+      const { status, ...otherErrors } = errors;
+      setErrors(otherErrors);
+    }
   };
 
   // Filter available statuses based on current status
@@ -122,6 +140,9 @@ export function OrderDialog({
     switch (fieldName) {
       case "status":
         return true; // Luôn cho phép chỉnh sửa trạng thái
+      case "isPaid":
+        // Không cho phép chỉnh sửa trạng thái thanh toán khi đã CONFIRMED
+        return order.status.toLowerCase() !== "confirmed";
       case "customerName":
       case "phoneNumber":
       case "address":
@@ -189,6 +210,7 @@ export function OrderDialog({
         customerName: "",
         phoneNumber: "",
         address: "",
+        isPaid: false,
       });
       setErrors({});
       onOpenChange(false);
@@ -202,6 +224,7 @@ export function OrderDialog({
       customerName: "",
       phoneNumber: "",
       address: "",
+      isPaid: false,
     });
     setErrors({});
     onOpenChange(false);
@@ -320,6 +343,26 @@ export function OrderDialog({
                 <p className="text-sm text-destructive">{errors.status}</p>
               )}
             </div>
+          </div>
+
+          {/* Payment Status */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isPaid"
+              checked={formData.isPaid}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, isPaid: !!checked })
+              }
+              disabled={loading || !canEditField("isPaid")}
+            />
+            <Label htmlFor="isPaid" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Đã thanh toán
+            </Label>
+            {!canEditField("isPaid") && (
+              <p className="text-xs text-muted-foreground ml-2">
+                (Không thể thay đổi sau khi xác nhận)
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

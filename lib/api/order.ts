@@ -17,6 +17,9 @@ export const orderService = {
     formData.append("customerName", data.customerName);
     formData.append("phoneNumber", data.phoneNumber);
     formData.append("address", data.address);
+    if (data.isPaid !== undefined) {
+      formData.append("isPaid", data.isPaid.toString());
+    }
 
     return apiCall(API_CONFIG.ENDPOINTS.ORDER.CREATE, {
       method: "POST",
@@ -45,6 +48,9 @@ export const orderService = {
     }
     if (data.address !== undefined) {
       formData.append("address", data.address);
+    }
+    if (data.isPaid !== undefined) {
+      formData.append("isPaid", data.isPaid.toString());
     }
 
     return apiCall(`${API_CONFIG.ENDPOINTS.ORDER.UPDATE}/${orderId}`, {
