@@ -26,11 +26,11 @@ export default function ProductUnitsPage() {
         <div>
           <h1 className="text-2xl font-bold">Quản Lý Đơn Vị Sản Phẩm</h1>
           <p className="text-muted-foreground">
-            Chọn sản phẩm có serial và quản lý từng đơn vị cụ thể
+            Chọn sản phẩm có serial và quản lý từng đơn vị cụ thể với auto loading
           </p>
         </div>
 
-        {/* Product Selection */}
+        {/* Product Selection with Infinite Scroll */}
         <ProductSelector
           onProductSelect={handleProductSelect}
           selectedProduct={selectedProduct}
