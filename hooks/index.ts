@@ -6,3 +6,4 @@ export { useProductsInfinite } from "./use-products-infinite";
 export { usePcBuildsInfinite } from "./use-pc-builds-infinite";
 export { useOrders } from "./use-orders";
 export { useOrderDetails } from "./use-order-details";
+export { useProductAttributesByProduct } from "./use-product-attributes-by-product";
