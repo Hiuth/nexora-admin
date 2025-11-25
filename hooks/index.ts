@@ -7,3 +7,4 @@ export { usePcBuildsInfinite } from "./use-pc-builds-infinite";
 export { useOrders } from "./use-orders";
 export { useOrderDetails } from "./use-order-details";
 export { useProductAttributesByProduct } from "./use-product-attributes-by-product";
+export { useNexoraDesktopProducts } from "./use-nexora-desktop-products";
