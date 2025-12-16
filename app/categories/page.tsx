@@ -60,21 +60,6 @@ export default function CategoriesPage() {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
-      return;
-    }
-
-    try {
-      // Note: API doesn't have delete method yet, so we'll just remove from local state
-      setCategories(categories.filter((cat) => cat.id !== id));
-      toast.success("Xóa danh mục thành công");
-    } catch (error) {
-      toast.error("Không thể xóa danh mục");
-      console.error("Error deleting category:", error);
-    }
-  };
-
   const handleSubmit = async (
     formData: CreateCategoryRequest | UpdateCategoryRequest,
     file?: File
@@ -144,7 +129,6 @@ export default function CategoriesPage() {
           <CategoryTable
             categories={categories}
             onEdit={handleEdit}
-            onDelete={handleDelete}
           />
         )}
       </div>

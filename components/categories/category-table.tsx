@@ -14,13 +14,11 @@ interface Category {
 interface CategoryTableProps {
   categories: Category[];
   onEdit: (category: Category) => void;
-  onDelete: (id: string) => void;
 }
 
 export function CategoryTable({
   categories,
   onEdit,
-  onDelete,
 }: CategoryTableProps) {
   return (
     <>
@@ -36,9 +34,6 @@ export function CategoryTable({
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
                     Icon
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
-                    Số sản phẩm
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-foreground">
                     Hành động
@@ -74,11 +69,6 @@ export function CategoryTable({
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-foreground">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {category.productCount || 0}
-                      </span>
-                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
                         <Button
@@ -89,15 +79,6 @@ export function CategoryTable({
                           title="Chỉnh sửa"
                         >
                           <Edit2 size={14} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onDelete(category.id)}
-                          className="text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
-                          title="Xóa"
-                        >
-                          <Trash2 size={14} />
                         </Button>
                       </div>
                     </td>
@@ -150,26 +131,7 @@ export function CategoryTable({
                     >
                       <Edit2 size={14} />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(category.id)}
-                      className="text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
-                      title="Xóa"
-                    >
-                      <Trash2 size={14} />
-                    </Button>
                   </div>
-                </div>
-
-                {/* Product Count */}
-                <div className="flex justify-between items-center pt-2 border-t border-border">
-                  <span className="text-sm text-muted-foreground">
-                    Số sản phẩm:
-                  </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {category.productCount || 0}
-                  </span>
                 </div>
               </div>
             </Card>

@@ -69,6 +69,7 @@ export function WarrantyTable({
   const [loading, setLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedWarranty, setSelectedWarranty] =
     useState<WarrantyRecordResponse | null>(null);
   const [updateStatus, setUpdateStatus] = useState("");
@@ -200,10 +201,15 @@ export function WarrantyTable({
   };
 
   const handleDeleteWarranty = async (warranty: WarrantyRecordResponse) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa bảo hành này?")) return;
+    setSelectedWarranty(warranty);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteWarranty = async () => {
+    if (!selectedWarranty) return;
 
     try {
-      await warrantyRecordService.delete(warranty.id);
+      await warrantyRecordService.delete(selectedWarranty.id);
 
       toast({
         title: "Thành công",
@@ -212,6 +218,8 @@ export function WarrantyTable({
 
       loadWarranties();
       onRefresh?.();
+      setDeleteDialogOpen(false);
+      setSelectedWarranty(null);
     } catch (error) {
       console.error("Error deleting warranty:", error);
       toast({
@@ -453,6 +461,48 @@ export function WarrantyTable({
             </Button>
             <Button onClick={handleUpdateWarranty} disabled={!updateStatus}>
               Cập nhật
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa bảo hành</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              Bạn có chắc chắn muốn xóa bảo hành này không? Hành động này không thể hoàn tác.
+            </p>
+            {selectedWarranty && (
+              <div className="mt-3 p-3 bg-muted rounded-lg">
+                <p className="text-sm font-medium">Thông tin bảo hành:</p>
+                <p className="text-sm text-muted-foreground">
+                  Mã: {selectedWarranty.id}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Sản phẩm: {selectedWarranty.productName}
+                </p>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setSelectedWarranty(null);
+              }}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeleteWarranty}
+            >
+              Xóa bảo hành
             </Button>
           </DialogFooter>
         </DialogContent>
