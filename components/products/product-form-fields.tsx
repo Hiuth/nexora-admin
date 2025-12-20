@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,6 +29,99 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandResponse, SubCategoryResponse, CategoryResponse } from "@/types";
+
+// Utility functions for better search
+const normalizeVietnameseText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d");
+};
+
+const calculateFuzzyScore = (query: string, target: string): number => {
+  const normalizedQuery = normalizeVietnameseText(query.trim());
+  const normalizedTarget = normalizeVietnameseText(target);
+  
+  if (normalizedQuery === "") return 1;
+  if (normalizedTarget.includes(normalizedQuery)) {
+    // Exact substring match gets highest score
+    const startIndex = normalizedTarget.indexOf(normalizedQuery);
+    if (startIndex === 0) return 10; // Starts with query
+    return 8; // Contains query
+  }
+  
+  // Check if all words in query exist in target
+  const queryWords = normalizedQuery.split(/\s+/).filter(word => word.length > 0);
+  const targetWords = normalizedTarget.split(/\s+/);
+  
+  let matchingWords = 0;
+  for (const queryWord of queryWords) {
+    for (const targetWord of targetWords) {
+      if (targetWord.includes(queryWord) || queryWord.includes(targetWord)) {
+        matchingWords++;
+        break;
+      }
+    }
+  }
+  
+  if (matchingWords === queryWords.length) return 6; // All words match
+  if (matchingWords > 0) return 3; // Some words match
+  
+  // Fuzzy character matching
+  let score = 0;
+  let queryIndex = 0;
+  for (let i = 0; i < normalizedTarget.length && queryIndex < normalizedQuery.length; i++) {
+    if (normalizedTarget[i] === normalizedQuery[queryIndex]) {
+      score++;
+      queryIndex++;
+    }
+  }
+  
+  return queryIndex === normalizedQuery.length ? score / normalizedQuery.length : 0;
+};
+
+const highlightSearchText = (text: string, query: string): React.ReactNode => {
+  if (!query.trim()) return text;
+  
+  const normalizedQuery = normalizeVietnameseText(query.trim());
+  const normalizedText = normalizeVietnameseText(text);
+  
+  const index = normalizedText.indexOf(normalizedQuery);
+  if (index === -1) return text;
+  
+  // Find the actual positions in the original text
+  let actualStart = 0;
+  let normalizedPos = 0;
+  
+  for (let i = 0; i < text.length && normalizedPos < index; i++) {
+    if (normalizeVietnameseText(text[i]) === normalizedText[normalizedPos]) {
+      normalizedPos++;
+    }
+    if (normalizedPos < index) actualStart++;
+  }
+  
+  let actualEnd = actualStart;
+  normalizedPos = index;
+  
+  for (let i = actualStart; i < text.length && normalizedPos < index + normalizedQuery.length; i++) {
+    if (normalizeVietnameseText(text[i]) === normalizedText[normalizedPos]) {
+      normalizedPos++;
+    }
+    actualEnd++;
+  }
+  
+  return (
+    <>
+      {text.substring(0, actualStart)}
+      <mark className="bg-yellow-200 text-yellow-900 rounded px-0.5">
+        {text.substring(actualStart, actualEnd)}
+      </mark>
+      {text.substring(actualEnd)}
+    </>
+  );
+};
 
 interface ProductFormData {
   productName: string;
@@ -66,10 +159,21 @@ export function ProductFormFields({
     (subCategory) => subCategory.categoryId === formData.categoryId
   );
 
-  // Filter brands based on search
-  const filteredBrands = brands.filter((brand) =>
-    brand.brandName.toLowerCase().includes(brandSearch.toLowerCase())
-  );
+  // Smart search and sort brands by relevance
+  const filteredBrands = useMemo(() => {
+    if (!brandSearch.trim()) {
+      return [...brands].sort((a, b) => a.brandName.localeCompare(b.brandName));
+    }
+    
+    return brands
+      .map(brand => ({
+        ...brand,
+        score: calculateFuzzyScore(brandSearch, brand.brandName)
+      }))
+      .filter(brand => brand.score > 0)
+      .sort((a, b) => b.score - a.score || a.brandName.localeCompare(b.brandName))
+      .map(({ score, ...brand }) => brand);
+  }, [brands, brandSearch]);
 
   // Get selected brand name for display
   const selectedBrand = brands.find((brand) => brand.id === formData.brandId);
@@ -168,32 +272,47 @@ export function ProductFormFields({
             <PopoverContent className="w-full p-0">
               <Command>
                 <CommandInput
-                  placeholder="Tìm thương hiệu..."
+                  placeholder="Tìm thương hiệu... (hỗ trợ tìm kiếm không dấu)"
                   value={brandSearch}
                   onValueChange={setBrandSearch}
+                  className="h-9"
                 />
                 <CommandList>
-                  <CommandEmpty>Không tìm thấy thương hiệu.</CommandEmpty>
+                  <CommandEmpty>
+                    {brandSearch.trim() ? (
+                      <div className="py-6 text-center text-sm text-muted-foreground">
+                        <div>Không tìm thấy thương hiệu phù hợp</div>
+                        <div className="mt-1 text-xs">
+                          Thử tìm kiếm với từ khóa khác hoặc không sử dụng dấu
+                        </div>
+                      </div>
+                    ) : (
+                      "Không có thương hiệu nào."
+                    )}
+                  </CommandEmpty>
                   <CommandGroup>
                     {filteredBrands.map((brand) => (
                       <CommandItem
                         key={brand.id}
-                        value={brand.id}
+                        value={brand.brandName} // Use brandName for better matching
                         onSelect={() => {
                           onFormDataChange({ brandId: brand.id });
                           setOpen(false);
                           setBrandSearch("");
                         }}
+                        className="flex items-center gap-2 px-2 py-2"
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4",
+                            "h-4 w-4 shrink-0",
                             formData.brandId === brand.id
                               ? "opacity-100"
                               : "opacity-0"
                           )}
                         />
-                        {brand.brandName}
+                        <span className="flex-1 truncate">
+                          {highlightSearchText(brand.brandName, brandSearch)}
+                        </span>
                       </CommandItem>
                     ))}
                   </CommandGroup>
