@@ -9,7 +9,6 @@ import {
   ProductFilterState,
 } from "@/components/products/product-filter";
 import { ProductList } from "@/components/products/product-list";
-import { ProductExport } from "@/components/products/product-export";
 import { ProductDetailDialog } from "@/components/products/product-detail-dialog";
 import { toast } from "sonner";
 import { ProductResponse, DialogMode } from "@/types";
@@ -168,11 +167,6 @@ export default function ProductsPage() {
           onSearch={handleSearch}
           onReset={handleResetFilters}
         />
-
-        {/* Export */}
-        <div className="flex items-center justify-end">
-          <ProductExport products={filteredProducts} filters={filters} />
-        </div>
 
         {/* Products List with Infinite Scroll */}
         <ProductList

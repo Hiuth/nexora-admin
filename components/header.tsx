@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Settings, User, LogOut } from "lucide-react";
+import { Bell, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
@@ -42,9 +42,6 @@ export function Header() {
           <Bell size={18} />
         </Button>
         <ThemeToggle />
-        <Button variant="ghost" size="icon" className="text-foreground">
-          <Settings size={18} />
-        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

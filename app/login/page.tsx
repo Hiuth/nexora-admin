@@ -161,19 +161,6 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Quên mật khẩu?
-              <Button
-                variant="link"
-                className="p-0 ml-1 h-auto"
-                onClick={() => router.push("/forgot-password")}
-              >
-                Đặt lại mật khẩu
-              </Button>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
