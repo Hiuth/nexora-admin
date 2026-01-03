@@ -51,8 +51,6 @@ const statusOptions = [
   { value: "AVAILABLE", label: "Có Sẵn" },
   { value: "SOLD", label: "Đã Bán" },
   { value: "WARRANTY", label: "Đang Bảo Hành" },
-  { value: "RESERVED", label: "Đã Đặt" },
-  { value: "DAMAGED", label: "Hỏng" },
 ];
 
 export function ProductUnitDialog({
