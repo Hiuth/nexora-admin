@@ -90,7 +90,14 @@ export function OrderTabs({
 
   const getFilteredOrders = (statusKey: string) => {
     const status = orderStatuses.find((s) => s.key === statusKey);
-    return status ? orders.filter(status.filter) : [];
+    const filteredOrders = status ? orders.filter(status.filter) : [];
+    
+    // Sắp xếp theo ngày đặt hàng (mới nhất trước)
+    return filteredOrders.sort((a, b) => {
+      const dateA = new Date(a.orderDate);
+      const dateB = new Date(b.orderDate);
+      return dateB.getTime() - dateA.getTime();
+    });
   };
 
   const getOrderCount = (statusKey: string) => {
