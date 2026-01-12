@@ -42,15 +42,17 @@ export function DashboardOverview() {
       {/* Statistics Cards */}
       <StatsCards stats={stats} />
 
+      {/* Reports Summary - Moved to top */}
+      <ReportsSummary
+        totalOrders={stats.totalOrders}
+        totalProducts={stats.totalProducts}
+      />
+
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Orders - Takes 2 columns */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2">
           <RecentOrders orders={stats.recentOrders} />
-          <ReportsSummary
-            totalOrders={stats.totalOrders}
-            totalProducts={stats.totalProducts}
-          />
         </div>
 
         {/* Sidebar - Takes 1 column */}

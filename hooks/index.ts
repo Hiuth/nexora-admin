@@ -6,5 +6,6 @@ export { useProductsInfinite } from "./use-products-infinite";
 export { usePcBuildsInfinite } from "./use-pc-builds-infinite";
 export { useOrders } from "./use-orders";
 export { useOrderDetails } from "./use-order-details";
+export { useOrderTrend } from "./use-order-trend";
 export { useProductAttributesByProduct } from "./use-product-attributes-by-product";
 export { useNexoraDesktopProducts } from "./use-nexora-desktop-products";

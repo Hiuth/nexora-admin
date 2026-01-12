@@ -2,27 +2,31 @@
 
 import { formatCurrency } from "@/lib/api-utils";
 import { useCategoryRevenue } from "@/hooks/use-category-revenue";
+import { useOrderTrend } from "@/hooks/use-order-trend";
 import {
   BarChart3,
   DollarSign,
   ShoppingBag,
-  Users,
   Package,
   Loader2,
 } from "lucide-react";
+import {
+  RevenueBarChart,
+  CategoryPieChart,
+  OrderTrendChart,
+} from "./chart-components";
 
 interface ReportsSummaryProps {
   totalOrders?: number;
-  totalCustomers?: number;
   totalProducts?: number;
 }
 
 export function ReportsSummary({
   totalOrders = 0,
-  totalCustomers = 0,
   totalProducts = 0,
 }: ReportsSummaryProps) {
   const { data: categoryData, loading, error } = useCategoryRevenue();
+  const { trendData, loading: trendLoading } = useOrderTrend(7);
 
   // Calculate total revenue from category data
   const totalRevenue = categoryData?.totalRevenue || 0;
@@ -39,12 +43,6 @@ export function ReportsSummary({
       value: totalOrders.toLocaleString(),
       icon: ShoppingBag,
       gradient: "from-blue-500 to-blue-600",
-    },
-    {
-      label: "Khách hàng",
-      value: totalCustomers.toLocaleString(),
-      icon: Users,
-      gradient: "from-purple-500 to-purple-600",
     },
     {
       label: "Sản phẩm",
@@ -126,7 +124,7 @@ export function ReportsSummary({
 
       <div className="p-6 space-y-6">
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {stats.map((stat, index) => {
             const IconComponent = stat.icon;
 
@@ -155,10 +153,10 @@ export function ReportsSummary({
 
         {/* Top Categories */}
         <div className="space-y-3">
-          <h3 className="text-lg font-bold text-gray-900">Danh mục bán chạy</h3>
+          <h3 className="text-lg font-bold text-gray-900">Doanh thu theo danh mục</h3>
           <div className="space-y-3">
             {categoriesWithPercentage.length > 0 ? (
-              categoriesWithPercentage.slice(0, 5).map((category, index) => (
+              categoriesWithPercentage.map((category, index) => (
                 <div
                   key={category.categoryId}
                   className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white border border-gray-100 rounded-xl hover:shadow-sm transition-all duration-200"
@@ -193,6 +191,37 @@ export function ReportsSummary({
             )}
           </div>
         </div>
+
+        {/* Charts Section */}
+        {categoriesWithPercentage.length > 0 && (
+          <div className="space-y-6">
+            {/* Revenue Charts - Each chart in separate row */}
+            <div className="space-y-6">
+              <RevenueBarChart 
+                data={categoriesWithPercentage} 
+                title="Doanh thu theo danh mục" 
+              />
+              <CategoryPieChart 
+                data={categoriesWithPercentage} 
+                title="Phân bổ doanh thu" 
+              />
+            </div>
+
+            {/* Order Trend Chart */}
+            <div className="w-full">
+              {trendLoading ? (
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 flex items-center justify-center h-80">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                </div>
+              ) : (
+                <OrderTrendChart 
+                  data={trendData} 
+                  title="Xu hướng đơn hàng 7 ngày qua" 
+                />
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
