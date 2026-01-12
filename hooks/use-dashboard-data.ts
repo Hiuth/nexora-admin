@@ -37,7 +37,7 @@ export function useDashboardData() {
       setLoading(true);
       setError(null);
 
-      // Load basic statistics
+      // Load basic statistics with large page size to get all data
       const [
         productsResponse,
         ordersResponse,
@@ -45,7 +45,7 @@ export function useDashboardData() {
         categoriesResponse,
         brandsResponse,
       ] = await Promise.all([
-        productService.getAll(),
+        productService.getAll(1, 1000), // Get all products with large page size
         orderService.getAll(),
         pcBuildService.getAll(),
         categoryService.getAll(),

@@ -33,27 +33,27 @@ export function StatsCards({ stats }: StatsCardsProps) {
       title: "Tổng đơn hàng",
       value: stats.totalOrders?.toLocaleString() || "0",
       icon: ShoppingCart,
-      description: "So với tháng trước",
+      description: "Tổng số đơn hàng",
       color: "blue",
       bgPattern: "bg-blue-500/10",
       iconBg: "bg-blue-500",
       accentIcon: Target,
-      highlight: "Xuất sắc",
-      trendType: "up" as const,
-      trend: "+12%",
+      highlight: "Đơn hàng",
+      trendType: "neutral" as const,
+      trend: "Total",
     },
     {
       title: "Sản phẩm",
       value: stats.totalProducts?.toLocaleString() || "0",
       icon: Package,
-      description: "Sản phẩm hoạt động",
+      description: "Sản phẩm trong kho",
       color: "emerald",
       bgPattern: "bg-emerald-500/10",
       iconBg: "bg-emerald-500",
       accentIcon: Star,
-      highlight: "Đang tăng",
-      trendType: "up" as const,
-      trend: "+8%",
+      highlight: "Sản phẩm",
+      trendType: "neutral" as const,
+      trend: "Total",
     },
     {
       title: "PC Builds",
@@ -64,9 +64,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
       bgPattern: "bg-purple-500/10",
       iconBg: "bg-purple-500",
       accentIcon: CheckCircle,
-      highlight: "Phổ biến",
+      highlight: "Cấu hình",
       trendType: "neutral" as const,
-      trend: "0%",
+      trend: "Total",
     },
     {
       title: "Danh mục",
@@ -78,9 +78,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
       bgPattern: "bg-orange-500/10",
       iconBg: "bg-orange-500",
       accentIcon: Timer,
-      highlight: "Ổn định",
+      highlight: "Tổng cộng",
       trendType: "neutral" as const,
-      trend: "0%",
+      trend: "Total",
     },
   ];
 
@@ -170,23 +170,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
                 <p className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300 leading-relaxed">
                   {card.description}
                 </p>
-              </div>
-
-              {/* Progress bar */}
-              <div className="mt-4 pt-4 border-t border-gray-100 group-hover:border-gray-200 transition-colors duration-300">
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                  <span>Hiệu suất</span>
-                  <span>85%</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-1.5 group-hover:bg-gray-200 transition-colors duration-300">
-                  <div
-                    className={`${card.iconBg.replace(
-                      "bg-",
-                      "bg-"
-                    )} h-1.5 rounded-full transition-all duration-1000 group-hover:w-[85%]`}
-                    style={{ width: "70%" }}
-                  ></div>
-                </div>
               </div>
             </div>
           </div>

@@ -7,9 +7,6 @@ import {
   Package,
   ShoppingCart,
   Zap,
-  Download,
-  Upload,
-  RefreshCw,
   TrendingUp,
   Activity,
   Monitor,
@@ -57,27 +54,6 @@ export function QuickActions() {
       icon: ShoppingCart,
       description: "Xem và quản lý đơn hàng",
       color: "pink",
-    },
-  ];
-
-  const utilityActions = [
-    {
-      label: "Export dữ liệu",
-      href: "#",
-      icon: Download,
-      description: "Xuất dữ liệu Excel/PDF",
-    },
-    {
-      label: "Import dữ liệu",
-      href: "#",
-      icon: Upload,
-      description: "Nhập dữ liệu từ file",
-    },
-    {
-      label: "Đồng bộ hóa",
-      href: "#",
-      icon: RefreshCw,
-      description: "Đồng bộ dữ liệu",
     },
   ];
 
@@ -207,38 +183,6 @@ export function QuickActions() {
                           {action.description}
                         </div>
                       </div>
-                    </div>
-                  </button>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Utility Actions */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-            Tiện ích
-          </h3>
-          <div className="space-y-2">
-            {utilityActions.map((action, index) => {
-              const IconComponent = action.icon;
-              return (
-                <Link key={index} href={action.href}>
-                  <button className="group w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200">
-                    <div className="p-2 bg-gray-100 group-hover:bg-gray-200 rounded-lg transition-colors duration-200">
-                      <IconComponent className="w-4 h-4 text-gray-600" />
-                    </div>
-                    <div className="text-left flex-1">
-                      <div className="font-medium text-gray-900 text-sm">
-                        {action.label}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {action.description}
-                      </div>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <TrendingUp className="w-4 h-4 text-gray-400" />
                     </div>
                   </button>
                 </Link>
